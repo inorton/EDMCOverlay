@@ -44,8 +44,12 @@ class Overlay(object):
 
         msg = {"Id": msgid, "Color": color, "Text": text, "X": x, "Y": y,
                 "TTL": ttl}
-        self.connection.send(json.dumps(msg))
-        self.connection.send("\n")
+        try:
+            self.connection.send(json.dumps(msg))
+            self.connection.send("\n")
+        except Exception:
+            self.connection = None
+            raise
 
 
 def testconsole():

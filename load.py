@@ -9,8 +9,8 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROG = "EDMCOverlay.exe"
 
-_started = False
 _client = None
+_service = None
 
 
 def find_server_program():
@@ -35,20 +35,34 @@ def plugin_start():
     Start our plugin, add this dir to the search path so others can use our module
     :return:
     """
-    global _started
-    global _client
+
     if HERE not in sys.path:
         sys.path.append(HERE)
-
-    # start our thingy
-    program = find_server_program()
-    if program:
-        subprocess.Popen([program])
-        time.sleep(10)
-        _started = True
-        import edmcoverlay
-        _client = edmcoverlay.Overlay()
+        ensure_service()
     return "EDMCOverlay"
+
+
+def ensure_service():
+    """
+    Start the overlay service program
+    :return:
+    """
+    global _client
+    global _service
+    program = find_server_program()
+
+    if program:
+        if _service:
+            if not _service.poll():
+                _service = None
+        if not _service:
+            _service = subprocess.Popen([program])
+
+        if not _client:
+            import edmcoverlay
+            _client = edmcoverlay.Overlay()
+
+    return _client
 
 
 def journal_entry(cmdr, system, station, entry, state):
@@ -61,5 +75,6 @@ def journal_entry(cmdr, system, station, entry, state):
     :param state:
     :return:
     """
-    global _client
-    _client.send_message("sys", system, "green", 100, 100)
+    client = ensure_service()
+    if client:
+        client.send_message("sys", system, "green", 100, 100)

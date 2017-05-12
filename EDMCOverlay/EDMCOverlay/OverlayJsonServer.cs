@@ -77,6 +77,13 @@ namespace EDMCOverlay
                     while (client.Connected)
                     {
                         var line = reader.ReadLine();
+
+                        if (!_renderer.Attached)
+                        {
+                            // game quit, bail out and let someone restart us
+                            return;
+                        }
+
                         Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
                         lock (_graphics)
                         {

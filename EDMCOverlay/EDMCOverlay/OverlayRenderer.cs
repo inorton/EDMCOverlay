@@ -18,17 +18,24 @@ namespace EDMCOverlay
 
         private OverlayController _controller;
         private ProcessSharp _processSharp;
+        private System.Diagnostics.Process _game;
 
         private Thread renderThread;
+
+        public bool Attached
+        {
+            get { return _game != null && !_game.HasExited; }
+        }
 
         public void Start(OverlayJsonServer service)
         {
 
-            var process = System.Diagnostics.Process.GetProcessesByName(EDProgramName).FirstOrDefault();
+            System.Diagnostics.Process process = System.Diagnostics.Process.GetProcessesByName(EDProgramName).FirstOrDefault();
             if (process == null)
             {
                 throw new EntryPointNotFoundException(EDProgramName);
             }
+            _game = process;
 
             _controller = new OverlayController();
             _controller.SetFrameRate(FPS);
