@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -14,8 +15,8 @@ namespace EDMCOverlay
     /// </summary>
     public class OverlayJsonServer
     {
-        private OverlayRenderer _renderer;
-
+        private readonly OverlayRenderer _renderer;
+        public const int DefaultTtl = 5;
         public const int MaxClients = 5;
 
         public int Port { get; private set; }
@@ -24,9 +25,11 @@ namespace EDMCOverlay
 
         private List<Thread> _threads = new List<Thread>();
 
-        private Dictionary<String, Graphic> _graphics = new Dictionary<string, Graphic>();
+        private readonly Dictionary<String, InternalGraphic> _graphics = new Dictionary<string, InternalGraphic>();
 
-        public Dictionary<String, Graphic> Graphics { get { return _graphics; }}
+        private int nextClientId = 1;
+
+        public Dictionary<String, InternalGraphic> Graphics => _graphics;
 
         public OverlayJsonServer(int port, OverlayRenderer renderer)
         {
@@ -60,7 +63,12 @@ namespace EDMCOverlay
 
         public void ServerThread(object obj)
         {
-            List<String> graphicIDs = new List<string>();
+            var clientId = 0;
+            lock (_graphics)
+            {
+                clientId = nextClientId++;
+            }
+
             try
             {
                 using (TcpClient client = (TcpClient) obj)
@@ -74,27 +82,28 @@ namespace EDMCOverlay
                         {
                             if (request.Id != null)
                             {
+                                if (request.TTL == 0)
+                                    request.TTL = DefaultTtl;
+                                if (request.Color == null)
+                                    request.Color = "red";
+
                                 if (String.IsNullOrWhiteSpace(request.Text))
                                 {
                                     if (_graphics.ContainsKey(request.Id))
                                     {
                                         _graphics.Remove(request.Id);
                                     }
-                                    if (graphicIDs.Contains(request.Id))
-                                    {
-                                        graphicIDs.Remove(request.Id);
-                                    }
                                 }
                                 else
                                 {
                                     if (_graphics.ContainsKey(request.Id))
                                     {
-                                        _graphics[request.Id] = request;
+                                        _graphics[request.Id].Update(request);
                                     }
                                     else
                                     {
-                                        graphicIDs.Add(request.Id);
-                                        _graphics.Add(request.Id, request);
+                                        _graphics.Add(request.Id,
+                                            new InternalGraphic(request, clientId));
                                     }
                                 }
                             }
@@ -112,11 +121,12 @@ namespace EDMCOverlay
                 lock (_graphics)
                 {
                     // lost connection, remove this connection's graphics
-                    foreach (string id in graphicIDs)
+                    foreach (var gid in _graphics.Keys.ToArray())
                     {
-                        if (_graphics.ContainsKey(id))
+                        InternalGraphic g = _graphics[gid];
+                        if (g.ClientId == clientId)
                         {
-                            _graphics.Remove(id);
+                            _graphics.Remove(gid);
                         }
                     }
                 }

@@ -6,6 +6,8 @@ namespace EDMCOverlay
     {
         public String Id { get; set; }
 
+        // The message to display, setting this to empty or null will
+        // delete the text
         public String Text { get; set; }
 
         // a colour name "red", "yellow", "green", "blue"
@@ -17,7 +19,8 @@ namespace EDMCOverlay
         // divide the screen by 12 cols
         public int X { get; set; }
 
-        // seconds to display
+        // seconds to display, if zero this will default to a 10 second life,
+        // any negative number will display the message forever (or until the client quits)
         public int TTL { get; set; }
     }
 }

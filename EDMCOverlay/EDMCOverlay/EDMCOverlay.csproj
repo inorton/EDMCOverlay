@@ -42,6 +42,8 @@
   <ItemGroup>
     <Compile Include="EDMCOverlay.cs" />
     <Compile Include="Graphic.cs" />
+    <Compile Include="InternalGraphic.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="OverlayController.cs" />
     <Compile Include="OverlayJsonServer.cs" />
     <Compile Include="OverlayRenderer.cs" />

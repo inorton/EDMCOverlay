@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using Overlay.NET.Common;
 using Overlay.NET.Directx;
 using Process.NET.Windows;
@@ -10,7 +11,7 @@ namespace EDMCOverlay
 {
     public class OverlayController : DirectXOverlayPlugin
     {
-        private Dictionary<String, Graphic> _graphics;
+        private Dictionary<String, InternalGraphic> _graphics;
         private int _framerate = 0;
         private readonly TickEngine _tickEngine = new TickEngine();
 
@@ -31,7 +32,7 @@ namespace EDMCOverlay
             this._framerate = rate;
         }
 
-        public void SetGraphics(Dictionary<String, Graphic> graphics)
+        public void SetGraphics(Dictionary<String, InternalGraphic> graphics)
         {
             _graphics = graphics;
         }
@@ -118,15 +119,23 @@ namespace EDMCOverlay
 
             lock (_graphics)
             {
-                foreach (string gid in _graphics.Keys)
+                foreach (string gid in _graphics.Keys.ToArray())
                 {
-                    Graphic draw = _graphics[gid];
-
-                    if (brushes.ContainsKey(draw.Color))
+                    InternalGraphic g = _graphics[gid];
+                    if (g.Expired)
                     {
-                        int brush = brushes[draw.Color];
-                        OverlayWindow.Graphics.DrawText(draw.Text, _font, brush,
-                            draw.X, draw.Y);
+                        _graphics.Remove(gid);
+                    }
+                    else
+                    {
+
+                        var draw = _graphics[gid].RealGraphic;
+                        if (brushes.ContainsKey(draw.Color))
+                        {
+                            int brush = brushes[draw.Color];
+                            OverlayWindow.Graphics.DrawText(draw.Text, _font, brush,
+                                draw.X, draw.Y);
+                        }
                     }
                 }
             }
