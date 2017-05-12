@@ -42,8 +42,11 @@ class Overlay(object):
         if not self.connection:
             self.connect()
 
-        msg = {"Id": msgid, "Color": color, "Text": text, "X": x, "Y": y,
-                "TTL": ttl}
+        msg = {"id": msgid,
+               "color": color,
+               "text": text,
+               "x": x, "y": y,
+               "ttl": ttl}
         try:
             self.connection.send(json.dumps(msg))
             self.connection.send("\n")

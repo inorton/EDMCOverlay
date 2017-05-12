@@ -52,11 +52,12 @@ def ensure_service():
     program = find_server_program()
 
     if program:
+        # if it isnt running, start it, if it has died, restart
         if _service:
             if not _service.poll():
                 _service = None
         if not _service:
-            _service = subprocess.Popen([program])
+            _service = subprocess.Popen([program], cwd=HERE)
 
         if not _client:
             import edmcoverlay
