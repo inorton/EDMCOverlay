@@ -39,6 +39,11 @@ def plugin_start():
     if HERE not in sys.path:
         sys.path.append(HERE)
         ensure_service()
+        time.sleep(2)
+        try:
+            _client.send_message("edmcintro", "EDMC Ready", "yellow", 30, 165, ttl=6)
+        except Exception:
+            pass
     return "EDMCOverlay"
 
 
@@ -58,11 +63,6 @@ def ensure_service():
                 _service = None
         if not _service:
             _service = subprocess.Popen([program], cwd=HERE)
-            time.sleep(3)
-            try:
-                _client.send_message("edmcintro", "EDMC Ready", "yellow", 30, 165, ttl=6)
-            except Exception:
-                pass
 
         if not _client:
             import edmcoverlay
