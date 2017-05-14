@@ -14,7 +14,7 @@ a program such as EDMC to display simple messages in the game's DirectX window.
 
 This is released as a standard EDMC Plugin, simple unpack the archive into the EDMC
 plugin folder.  Releases of EDMC Overlay includes a binary copy of the Overlay.NET
-library from https://github.com/lolp1/Overlay.NET. This copy is used inder the same
+library from https://github.com/lolp1/Overlay.NET. This copy is used under the same
 MIT license (below) as EDMC Overlay.
 
 ## MIT License
