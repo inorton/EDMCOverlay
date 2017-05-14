@@ -58,6 +58,11 @@ def ensure_service():
                 _service = None
         if not _service:
             _service = subprocess.Popen([program], cwd=HERE)
+            time.sleep(3)
+            try:
+                _client.send_message("intro", "EDMC Overlay started!", "yellow", 0, 700, ttl=8)
+            except Exception:
+                pass
 
         if not _client:
             import edmcoverlay
@@ -68,7 +73,7 @@ def ensure_service():
 
 def journal_entry(cmdr, system, station, entry, state):
     """
-    Process a journal item
+    Make sure the service is up and running
     :param cmdr:
     :param system:
     :param station:
@@ -76,6 +81,4 @@ def journal_entry(cmdr, system, station, entry, state):
     :param state:
     :return:
     """
-    client = ensure_service()
-    if client:
-        client.send_message("sys", system, "green", 100, 100)
+    ensure_service()
