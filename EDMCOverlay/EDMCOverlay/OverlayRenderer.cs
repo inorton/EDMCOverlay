@@ -49,6 +49,7 @@ namespace EDMCOverlay
             _processSharp.ProcessExited += (sender, args) =>
             {
                 this.run = false;
+                Environment.Exit(0);
             };
 
             renderThread = new Thread(new ThreadStart(Update));
