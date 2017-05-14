@@ -20,6 +20,8 @@ namespace EDMCOverlay
         private ProcessSharp _processSharp;
         private System.Diagnostics.Process _game;
 
+        private bool run = true;
+
         private Thread renderThread;
 
         public bool Attached
@@ -44,6 +46,10 @@ namespace EDMCOverlay
             _processSharp = new ProcessSharp(process, MemoryType.Remote);
             _controller.Initialize(_processSharp.WindowFactory.MainWindow);
             _controller.Enable();
+            _processSharp.ProcessExited += (sender, args) =>
+            {
+                this.run = false;
+            };
 
             renderThread = new Thread(new ThreadStart(Update));
             renderThread.Start();
@@ -51,7 +57,7 @@ namespace EDMCOverlay
 
         private void Update()
         {
-            while (true)
+            while (this.run)
             {
                 _controller.Update();
             }

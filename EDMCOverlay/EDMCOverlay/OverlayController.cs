@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using Overlay.NET.Common;
 using Overlay.NET.Directx;
 using Process.NET.Windows;
@@ -105,7 +106,12 @@ namespace EDMCOverlay
             base.Disable();
         }
 
-        public override void Update() => _tickEngine.Pulse();
+        public override void Update()
+        {
+            _tickEngine.Pulse();
+            // sleep to prevent the main thread going mad
+            Thread.Sleep((int) (1000.0 / this._framerate));
+        }
 
         protected void InternalRender()
         {
