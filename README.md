@@ -13,17 +13,30 @@ a program such as EDMC to display simple messages in the game's DirectX window.
 ## Installation
 
 This is released as a standard EDMC Plugin, simple unpack the archive into the EDMC
-plugin folder.
+plugin folder.  Releases of EDMC Overlay includes a binary copy of the Overlay.NET
+library from https://github.com/lolp1/Overlay.NET. This copy is used inder the same
+MIT license (below) as EDMC Overlay.
 
-## License
+## MIT License
 
-I intend to distribute this under the BSD Public License, but Overlay.NET, which
-forms a large important part of this package does not have a specific defined
-license - https://github.com/lolp1/Overlay.NET/issues/13
+Copyright 2017 Ian Norton
 
-Since Overlay.NET has been published by it's author to NuGet, and is used widely I
-assume that "using" it is expected and encouraged but cannot apply a license to
-this derived work yet.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this 
+software and associated documentation files (the "Software"), to deal in the Software
+without restriction, including without limitation the rights to use, copy, modify, 
+merge, publish, distribute, sublicense, and/or sell copies of the Software, and to 
+permit persons to whom the Software is furnished to do so, subject to the following 
+conditions:
+
+The above copyright notice and this permission notice shall be included in all copies 
+or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # Protocol
 
@@ -36,8 +49,12 @@ Assuming EliteDangerous64.exe is running, you may send a single JSON message (on
 Like so:
 
 ```
-{"id": "test1", "text": "You are low on fuel!", "color": "red", "x": 200, "y": 100, "ttl": 8}
+{"id": "test1", "text": "You are low on fuel!", "size", "normal", color": "red", "x": 200, "y": 100, "ttl": 8}
 ```
+
+Supported colors values are: "red", "green", "yellow", "blue".
+
+Supported size values are: "normal" and "large"
 
 The server will process this as an instruction to display the message "You are low on fuel!"
 in red text at 200,100 for 8 seconds.
