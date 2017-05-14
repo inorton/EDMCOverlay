@@ -43,6 +43,22 @@ namespace EDMCOverlay
             this._listener.Start();
             this._renderer.Start(this);
 
+            lock (_graphics)
+            {
+                var banner = new Graphic
+                {
+                    TTL = 5,
+                    Id = "_",
+                    Color = "yellow",
+                    Size = "large",
+                    X = 30,
+                    Y = 130,
+                    Text = "/EDMC Overlay/"
+                };
+                var intro = new InternalGraphic(banner, -1);
+                _graphics.Add(banner.Id, intro);
+            }
+
             while (true)
             {
                 foreach (var thread in _threads.ToArray())

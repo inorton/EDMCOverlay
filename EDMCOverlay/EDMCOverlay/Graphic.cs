@@ -10,6 +10,9 @@ namespace EDMCOverlay
         // delete the text
         public String Text { get; set; }
 
+        // normal or large
+        public String Size { get; set; }
+
         // a colour name "red", "yellow", "green", "blue"
         public String Color { get; set; }
 

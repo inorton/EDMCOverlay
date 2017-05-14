@@ -60,7 +60,7 @@ def ensure_service():
             _service = subprocess.Popen([program], cwd=HERE)
             time.sleep(3)
             try:
-                _client.send_message("intro", "EDMC Overlay started!", "yellow", 0, 700, ttl=8)
+                _client.send_message("edmcintro", "EDMC Ready", "yellow", 30, 165, ttl=6)
             except Exception:
                 pass
 

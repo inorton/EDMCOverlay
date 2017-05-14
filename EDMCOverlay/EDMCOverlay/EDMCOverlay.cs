@@ -16,11 +16,15 @@ namespace EDMCOverlay
             {
                 OverlayRenderer renderer = new OverlayRenderer();
 
+            #if DEBUG
+                // let exceptions bubble!
+            #else
                 AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
                 {
                     loggerInstance.LogMessage("unhandled exception: " + sender.ToString());
                     Environment.Exit(0);
                 };
+            #endif
 
                 new OverlayJsonServer(5010, renderer).Start();
             }

@@ -57,7 +57,7 @@ namespace EDMCOverlay
             _interiorBrush = OverlayWindow.Graphics.CreateBrush(0x7FFFFF00);
 
             _font = OverlayWindow.Graphics.CreateFont("Arial", 16);
-            _hugeFont = OverlayWindow.Graphics.CreateFont("Arial", 30, true);
+            _hugeFont = OverlayWindow.Graphics.CreateFont("Arial", 24, bold: true);
 
             _i = 0;
             // Set up update interval and register events for the tick engine.
@@ -139,8 +139,16 @@ namespace EDMCOverlay
                         if (brushes.ContainsKey(draw.Color))
                         {
                             int brush = brushes[draw.Color];
-                            OverlayWindow.Graphics.DrawText(draw.Text, _font, brush,
-                                draw.X, draw.Y);
+                            int font = _font;
+                            if (draw.Size != null)
+                            {
+                                if (draw.Size.Equals("large"))
+                                {
+                                    font = _hugeFont;
+                                }
+                            }
+                            OverlayWindow.Graphics.DrawText(
+                                draw.Text, font, brush, draw.X, draw.Y);
                         }
                     }
                 }
