@@ -9,6 +9,7 @@ a program such as EDMC to display simple messages in the game's DirectX window.
 * Currently supports 64Bit Elite:Dangerous (Horizons) on Windows Only.
 * 64bit Non-Horizons may work. YMMV.
 * Apple support is not likley (I don't have a Mac)
+* "Windowed" or "Bordless Fullscreen" mode only.
 
 ## Installation
 

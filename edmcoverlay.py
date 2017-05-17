@@ -29,7 +29,7 @@ class Overlay(object):
         connection.connect((self.server, self.port))
         self.connection = connection
 
-    def send_message(self, msgid, text, color, x, y, ttl=4):
+    def send_message(self, msgid, text, color, x, y, ttl=4, size="normal"):
         """
         Send a message
         :param msgid:
@@ -37,6 +37,8 @@ class Overlay(object):
         :param color:
         :param x:
         :param y:
+        :param ttl:
+        :param size:
         :return:
         """
         if not self.connection:
@@ -45,6 +47,7 @@ class Overlay(object):
         msg = {"id": msgid,
                "color": color,
                "text": text,
+               "size": size,
                "x": x, "y": y,
                "ttl": ttl}
         try:
