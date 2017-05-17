@@ -1,5 +1,7 @@
 ﻿using System;
-using System.IO;
+using System.Diagnostics;
+using System.Linq;
+using Process = System.Diagnostics.Process;
 
 namespace EDMCOverlay
 {
@@ -11,26 +13,27 @@ namespace EDMCOverlay
 
         public static void Main(string[] argv)
         {
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                Environment.Exit(1);
+            };
             loggerInstance.Setup("edmcoverlay.log");
             try
             {
                 OverlayRenderer renderer = new OverlayRenderer();
-
-            #if DEBUG
-                // let exceptions bubble!
-            #else
-                AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
-                {
-                    loggerInstance.LogMessage("unhandled exception: " + sender.ToString());
-                    Environment.Exit(0);
-                };
-            #endif
-
                 new OverlayJsonServer(5010, renderer).Start();
             }
             catch (Exception err)
             {
-                loggerInstance.LogMessage(err.ToString());
+                try
+                {
+                    loggerInstance.LogMessage(err.ToString());
+                }
+                catch (Exception unhandled)
+                {
+                    // logger problem?
+                }
+                Environment.Exit(0);
             }
         }
     }
