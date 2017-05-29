@@ -24,6 +24,14 @@ namespace EDMCOverlay
 
         private Thread renderThread;
 
+        public OverlayController Controller
+        {
+            get
+            {
+                return _controller;
+            }
+        }
+
         public bool Attached
         {
             get { return _game != null && !_game.HasExited; }

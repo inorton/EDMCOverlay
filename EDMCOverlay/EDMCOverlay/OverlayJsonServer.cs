@@ -77,6 +77,32 @@ namespace EDMCOverlay
             }
         }
 
+        public void SendGraphic(Graphic request, int clientId)
+        {
+            lock (_graphics)
+            {
+                if (String.IsNullOrWhiteSpace(request.Text))
+                {
+                    if (_graphics.ContainsKey(request.Id))
+                    {
+                        _graphics.Remove(request.Id);
+                    }
+                }
+                else
+                {
+                    if (_graphics.ContainsKey(request.Id))
+                    {
+                        _graphics[request.Id].Update(request);
+                    }
+                    else
+                    {
+                        _graphics.Add(request.Id,
+                            new InternalGraphic(request, clientId));
+                    }
+                }
+            }
+        }
+
         public void ServerThread(object obj)
         {
             var clientId = 0;
@@ -101,36 +127,7 @@ namespace EDMCOverlay
                         }
 
                         Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
-                        lock (_graphics)
-                        {
-                            if (request.Id != null)
-                            {
-                                if (request.TTL == 0)
-                                    request.TTL = DefaultTtl;
-                                if (request.Color == null)
-                                    request.Color = "red";
-
-                                if (String.IsNullOrWhiteSpace(request.Text))
-                                {
-                                    if (_graphics.ContainsKey(request.Id))
-                                    {
-                                        _graphics.Remove(request.Id);
-                                    }
-                                }
-                                else
-                                {
-                                    if (_graphics.ContainsKey(request.Id))
-                                    {
-                                        _graphics[request.Id].Update(request);
-                                    }
-                                    else
-                                    {
-                                        _graphics.Add(request.Id,
-                                            new InternalGraphic(request, clientId));
-                                    }
-                                }
-                            }
-                        }
+                        SendGraphic(request, clientId);
                     }
                 }
             }

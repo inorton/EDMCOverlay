@@ -81,9 +81,11 @@ namespace EDMCOverlay
             var targetWindowIsActivated = TargetWindow.IsActivated;
             if (!targetWindowIsActivated && OverlayWindow.IsVisible)
             {
-              //  _watch.Stop();
-              //  ClearScreen();
-              //  OverlayWindow.Hide();
+#if false
+                _watch.Stop();
+                ClearScreen();
+                OverlayWindow.Hide();
+#endif
             }
             else if (targetWindowIsActivated && !OverlayWindow.IsVisible)
             {
