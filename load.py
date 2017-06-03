@@ -58,21 +58,21 @@ def ensure_service():
 
     if program:
         # if it isnt running, start it, if it has died, restart
-        if _service:
-            if not _service.poll():
-                _service = None
-        if not _service:
-            import ctypes
-            SEM_NOGPFAULTERRORBOX = 0x0002  # From MSDN
-            ctypes.windll.kernel32.SetErrorMode(SEM_NOGPFAULTERRORBOX);
-            CREATE_NO_WINDOW = 0x08000000  # From Windows API
-            subprocess_flags = CREATE_NO_WINDOW
-            _service = subprocess.Popen([program], cwd=HERE, creationflags=subprocess_flags)
-
         if not _client:
             import edmcoverlay
             _client = edmcoverlay.Overlay()
 
+        try:
+            if _service:
+                if not _service.poll():
+                    _service = None
+            if not _service:
+                _service = subprocess.Popen([program], cwd=HERE)
+            time.sleep(2)
+
+            print _service
+        except Exception as err:
+            pass
     return _client
 
 

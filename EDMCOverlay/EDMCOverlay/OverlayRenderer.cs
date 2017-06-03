@@ -20,6 +20,8 @@ namespace EDMCOverlay
         private ProcessSharp _processSharp;
         private System.Diagnostics.Process _game;
 
+        public EDGlassForm Glass { get; private set; }
+
         private bool run = true;
 
         private Thread renderThread;
@@ -43,15 +45,18 @@ namespace EDMCOverlay
             System.Diagnostics.Process process = System.Diagnostics.Process.GetProcessesByName(EDProgramName).FirstOrDefault();
             if (process == null)
             {
-                throw new EntryPointNotFoundException(EDProgramName);
+                Console.WriteLine("ED not running");
+                System.Environment.Exit(0);
             }
             _game = process;
 
-            _controller = new OverlayController();
-            _controller.SetFrameRate(FPS);
-            _controller.SetGraphics(service.Graphics);
-
-            _processSharp = new ProcessSharp(process, MemoryType.Remote);
+            //_controller = new OverlayController();
+            //_controller.SetFrameRate(FPS);
+            //_controller.SetGraphics(service.Graphics);
+            
+            Glass = new EDGlassForm(process);
+            
+            /*
             _controller.Initialize(_processSharp.WindowFactory.MainWindow);
             _controller.Enable();
             _processSharp.ProcessExited += (sender, args) =>
@@ -62,6 +67,12 @@ namespace EDMCOverlay
 
             renderThread = new Thread(new ThreadStart(Update));
             renderThread.Start();
+            */
+        }
+
+        private void _processSharp_ProcessExited(object sender, EventArgs e)
+        {
+            System.Environment.Exit(0);
         }
 
         private void Update()

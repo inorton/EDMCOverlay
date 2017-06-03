@@ -18,8 +18,7 @@ namespace EDMCOverlay
             OverlayRenderer xr = (OverlayRenderer)obj;
             int i = 0;
             Graphic test = new Graphic();
-         
-
+    
             while(true)
             {
                 System.Threading.Thread.Sleep(100);
@@ -43,14 +42,20 @@ namespace EDMCOverlay
             loggerInstance.Setup("edmcoverlay.log");
             try
             {
-                if (argv[0].Equals("--test"))
+                if (argv.Length > 0)
                 {
-                    System.Threading.ThreadPool.QueueUserWorkItem(TestThread);
+                    if (argv[0].Equals("--test"))
+                    {
+                        System.Threading.ThreadPool.QueueUserWorkItem(TestThread);
+                    }
                 }
 
                 OverlayRenderer renderer = new OverlayRenderer();
                 server = new OverlayJsonServer(5010, renderer);
-                server.Start();
+
+                System.Threading.ThreadPool.QueueUserWorkItem((x) => server.Start());
+
+                System.Windows.Forms.Application.Run(renderer.Glass);
             }
             catch (Exception err)
             {

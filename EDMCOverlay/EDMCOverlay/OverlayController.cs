@@ -42,8 +42,7 @@ namespace EDMCOverlay
         {
             // Set target window by calling the base method
             base.Initialize(targetWindow);
-
-
+            
             OverlayWindow = new DirectXOverlayWindow(targetWindow.Handle, false);
             _watch = Stopwatch.StartNew();
 
@@ -81,7 +80,7 @@ namespace EDMCOverlay
             var targetWindowIsActivated = TargetWindow.IsActivated;
             if (!targetWindowIsActivated && OverlayWindow.IsVisible)
             {
-#if false
+#if true
                 _watch.Stop();
                 ClearScreen();
                 OverlayWindow.Hide();

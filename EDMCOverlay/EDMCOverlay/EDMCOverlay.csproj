@@ -44,6 +44,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EDGlassForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="EDMCOverlay.cs" />
     <Compile Include="Graphic.cs" />
     <Compile Include="InternalGraphic.cs" />
@@ -64,7 +67,9 @@
       <HintPath>..\..\Overlay.NET\src\packages\SharpDX.Mathematics.3.1.2-beta109\lib\net45\SharpDX.Mathematics.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
