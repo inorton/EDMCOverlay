@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using Process = System.Diagnostics.Process;
 
 namespace EDMCOverlay
 {
@@ -55,6 +54,9 @@ namespace EDMCOverlay
 
                 System.Threading.ThreadPool.QueueUserWorkItem((x) => server.Start());
 
+                EDGlassForm glass = new EDGlassForm(renderer.GetGame());
+                renderer.Glass = glass;
+                renderer.Graphics = server.Graphics;
                 System.Windows.Forms.Application.Run(renderer.Glass);
             }
             catch (Exception err)

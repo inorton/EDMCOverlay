@@ -3,11 +3,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Overlay.NET;
-using Overlay.NET.Common;
-using Process.NET;
-using Process.NET.Assembly.CallingConventions;
-using Process.NET.Memory;
+using System.Collections.Generic;
+using Process = System.Diagnostics.Process;
+using System.Drawing;
 
 namespace EDMCOverlay
 {
@@ -16,70 +14,105 @@ namespace EDMCOverlay
         public const string EDProgramName = "EliteDangerous64";
         public const int FPS = 30;
 
-        private OverlayController _controller;
-        private ProcessSharp _processSharp;
         private System.Diagnostics.Process _game;
 
-        public EDGlassForm Glass { get; private set; }
+        public EDGlassForm Glass { get; set; }
+        public Dictionary<String, InternalGraphic> Graphics { get; set; }
 
         private bool run = true;
 
         private Thread renderThread;
-
-        public OverlayController Controller
-        {
-            get
-            {
-                return _controller;
-            }
-        }
-
+        
         public bool Attached
         {
             get { return _game != null && !_game.HasExited; }
         }
 
-        public void Start(OverlayJsonServer service)
-        {
 
+        public System.Diagnostics.Process GetGame()
+        {
             System.Diagnostics.Process process = System.Diagnostics.Process.GetProcessesByName(EDProgramName).FirstOrDefault();
             if (process == null)
             {
                 Console.WriteLine("ED not running");
                 System.Environment.Exit(0);
             }
-            _game = process;
-
-            //_controller = new OverlayController();
-            //_controller.SetFrameRate(FPS);
-            //_controller.SetGraphics(service.Graphics);
-            
-            Glass = new EDGlassForm(process);
-            
-            /*
-            _controller.Initialize(_processSharp.WindowFactory.MainWindow);
-            _controller.Enable();
-            _processSharp.ProcessExited += (sender, args) =>
-            {
-                this.run = false;
-                Environment.Exit(0);
-            };
-
-            renderThread = new Thread(new ThreadStart(Update));
-            renderThread.Start();
-            */
+            return process;
         }
 
-        private void _processSharp_ProcessExited(object sender, EventArgs e)
+        public void Start(OverlayJsonServer service)
         {
-            System.Environment.Exit(0);
+            ThreadPool.QueueUserWorkItem((x) =>
+            {
+                this.Update();
+            });
         }
+
 
         private void Update()
         {
+            Graphics draw = null;
+
+            Font normal = new Font(FontFamily.GenericSansSerif, (float)14.0, FontStyle.Regular);
+            Font large = new Font(FontFamily.GenericSansSerif, (float)19.0, FontStyle.Bold);
+
+            Brush red = new SolidBrush(Color.Red);
+            Brush yellow = new SolidBrush(Color.Yellow);
+            Brush green = new SolidBrush(Color.Green);
+            Brush blue = new SolidBrush(Color.Blue);
+
+            Dictionary<String, Brush> colours = new Dictionary<string, Brush>
+            {
+                { "red", red },
+                { "yellow", yellow },
+                { "green", green },
+                { "blue", blue },
+            };
+
             while (this.run)
             {
-                _controller.Update();
+                // _controller.Update();
+                if (Glass != null)
+                {
+                    if (draw == null)
+                        draw = Glass.CreateGraphics();
+
+                    if (Graphics == null) continue;
+
+                    draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+
+                    lock (Graphics)
+                    {
+                        Glass.BeginInvoke(new Action(() =>
+                        {
+                            draw.Clear(Color.Black);
+                            foreach (var gfx in Graphics.Values)
+                            {
+                                Graphic g = gfx.RealGraphic;
+                                Font size = normal;
+                                if (g.Size != null && g.Size.Equals("large"))
+                                {
+                                    size = large;
+                                }
+                                Brush paint = null;
+                                if (colours.TryGetValue(g.Color, out paint))
+                                {
+                                    draw.DrawString(gfx.RealGraphic.Text, size, paint, (float)g.X, (float)g.Y);
+                                }
+                            }
+
+
+                            System.Drawing.Rectangle rectangle = new System.Drawing.Rectangle(
+                               50, 10, 115, 115);
+                            draw.DrawEllipse(System.Drawing.Pens.Red, rectangle);
+                            draw.DrawRectangle(System.Drawing.Pens.Green, rectangle);
+                        }));                    
+                    }
+
+                    Glass.FollowWindow();
+                }
+                
+                System.Threading.Thread.Sleep(1000 / FPS);
             }
         }
     }

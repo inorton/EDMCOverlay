@@ -76,7 +76,27 @@ namespace EDMCOverlay
         {
             base.OnLoad(e);
 
-            if (follow != null)
+            FollowWindow();
+            
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.DoubleBuffer |
+                ControlStyles.UserPaint |
+                ControlStyles.Opaque |
+                ControlStyles.ResizeRedraw |
+                ControlStyles.SupportsTransparentBackColor, true);
+        
+        }
+
+        public void FollowWindow()
+        {
+            if (follow == null) return;
+
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(() => { FollowWindow(); }));
+            }
+            else
             {
                 RECT window = new RECT();
                 if (GetWindowRect(follow.MainWindowHandle, ref window))
@@ -85,17 +105,6 @@ namespace EDMCOverlay
                     this.ClientSize = new Size(window.Right - window.Left, window.Bottom - window.Top);
                 }                
             }
-            /*
-            this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
-                ControlStyles.AllPaintingInWmPaint |
-                ControlStyles.DoubleBuffer |
-                ControlStyles.UserPaint |
-                ControlStyles.Opaque |
-                ControlStyles.ResizeRedraw |
-                ControlStyles.SupportsTransparentBackColor, true);
-        */
         }
-        
-        
     }
 }
