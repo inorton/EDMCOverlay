@@ -14,7 +14,7 @@ namespace EDMCOverlay
 {
     public class EDGlassForm : Form
     {
-        System.Diagnostics.Process follow;
+        public System.Diagnostics.Process Follow;
 
         private const int DWMWA_TRANSITIONS_FORCEDISABLED = 3;
         [DllImport("dwmapi.dll")]
@@ -59,7 +59,7 @@ namespace EDMCOverlay
 
             int initialStyle = GetWindowLong(this.Handle, -20);
             SetWindowLong(this.Handle, -20, initialStyle | 0x80000 | 0x20);
-            this.follow = follow;
+            this.Follow = follow;
 
             // Disable Aero transitions, the plexiglass gets too visible
             if (Environment.OSVersion.Version.Major >= 6)
@@ -90,7 +90,7 @@ namespace EDMCOverlay
 
         public void FollowWindow()
         {
-            if (follow == null) return;
+            if (Follow == null) return;
 
             if (this.InvokeRequired)
             {
@@ -99,7 +99,7 @@ namespace EDMCOverlay
             else
             {
                 RECT window = new RECT();
-                if (GetWindowRect(follow.MainWindowHandle, ref window))
+                if (GetWindowRect(Follow.MainWindowHandle, ref window))
                 {
                     this.Location = new Point(window.Left, window.Top);
                     this.ClientSize = new Size(window.Right - window.Left, window.Bottom - window.Top);

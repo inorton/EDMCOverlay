@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Process = System.Diagnostics.Process;
 using System.Drawing;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace EDMCOverlay
 {
     public class OverlayRenderer
     {
+        public const string EDWindowName = "Elite - Dangerous(CLIENT)";
         public const string EDProgramName = "EliteDangerous64";
         public const int FPS = 30;
 
@@ -48,6 +51,26 @@ namespace EDMCOverlay
             });
         }
 
+        [DllImport("user32.dll")]
+        static extern IntPtr GetForegroundWindow();
+
+
+        [DllImport("user32.dll")]
+        static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+
+        private static string GetActiveWindowTitle()
+        {
+            const int nChars = 256;
+            StringBuilder Buff = new StringBuilder(nChars);
+            IntPtr handle = GetForegroundWindow();
+
+            if (GetWindowText(handle, Buff, nChars) > 0)
+            {
+                return Buff.ToString();
+            }
+            return null;
+        }
+
 
         private void Update()
         {
@@ -69,47 +92,53 @@ namespace EDMCOverlay
                 { "blue", blue },
             };
 
+            
             while (this.run)
             {
+
                 // _controller.Update();
                 if (Glass != null)
                 {
                     if (draw == null)
+                    {
                         draw = Glass.CreateGraphics();
+                        draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                    }
 
                     if (Graphics == null) continue;
 
-                    draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
-
-                    lock (Graphics)
+                    if (GetForegroundWindow() == Glass.Follow.MainWindowHandle)
                     {
-                        Glass.BeginInvoke(new Action(() =>
+                        lock (Graphics)
                         {
-                            draw.Clear(Color.Black);
-                            foreach (var gfx in Graphics.Values)
+                            Glass.BeginInvoke(new Action(() =>
                             {
-                                Graphic g = gfx.RealGraphic;
-                                Font size = normal;
-                                if (g.Size != null && g.Size.Equals("large"))
+                                draw.Clear(Color.Black);
+                                foreach (var gfx in Graphics.Values)
                                 {
-                                    size = large;
+                                    Graphic g = gfx.RealGraphic;
+                                    Font size = normal;
+                                    if (g.Size != null && g.Size.Equals("large"))
+                                    {
+                                        size = large;
+                                    }
+                                    Brush paint = null;
+                                    if (colours.TryGetValue(g.Color, out paint))
+                                    {
+                                        draw.DrawString(gfx.RealGraphic.Text, size, paint, (float)g.X, (float)g.Y);
+                                    }
                                 }
-                                Brush paint = null;
-                                if (colours.TryGetValue(g.Color, out paint))
-                                {
-                                    draw.DrawString(gfx.RealGraphic.Text, size, paint, (float)g.X, (float)g.Y);
-                                }
-                            }
 
 
-                            System.Drawing.Rectangle rectangle = new System.Drawing.Rectangle(
-                               50, 10, 115, 115);
-                            draw.DrawEllipse(System.Drawing.Pens.Red, rectangle);
-                            draw.DrawRectangle(System.Drawing.Pens.Green, rectangle);
-                        }));                    
+                                System.Drawing.Rectangle rectangle = new System.Drawing.Rectangle(
+                                   50, 10, 115, 115);
+                                draw.DrawEllipse(System.Drawing.Pens.Red, rectangle);
+                                draw.DrawRectangle(System.Drawing.Pens.Green, rectangle);
+                            }));
+                        }
+
+                        Glass.FollowWindow();
                     }
-
-                    Glass.FollowWindow();
                 }
                 
                 System.Threading.Thread.Sleep(1000 / FPS);
