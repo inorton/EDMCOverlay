@@ -8,6 +8,7 @@ using Process = System.Diagnostics.Process;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Drawing.Text;
 
 namespace EDMCOverlay
 {
@@ -45,6 +46,7 @@ namespace EDMCOverlay
 
         public void Start(OverlayJsonServer service)
         {
+            LoadFonts();
             ThreadPool.QueueUserWorkItem((x) =>
             {
                 this.StartUpdate();
@@ -53,7 +55,6 @@ namespace EDMCOverlay
 
         [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
-
 
         [DllImport("user32.dll")]
         static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
@@ -71,15 +72,27 @@ namespace EDMCOverlay
             return null;
         }
 
+        PrivateFontCollection fonts = new PrivateFontCollection();
+        Font normalFont;
+        Dictionary<String, Font> fontSizes;
 
-        private void StartUpdate()
+        public void LoadFonts()
         {
-            Graphics draw = null;
+            byte[] data = Properties.Resources.EUROCAPS;
+            IntPtr ptr = Marshal.AllocCoTaskMem(data.Length);
+            Marshal.Copy(data, 0, ptr, data.Length);
+            fonts.AddMemoryFont(ptr, data.Length);
 
-            Font normal = new Font(FontFamily.GenericMonospace, (float)14.0, FontStyle.Regular);
-            Font large = new Font(FontFamily.GenericMonospace, (float)19.0, FontStyle.Bold);
+            normalFont = new Font(fonts.Families[0], (float)12.0, FontStyle.Regular);
+            fontSizes = new Dictionary<string, Font>
+            {
+                { "large", new Font(fonts.Families[0], (float)19.0, FontStyle.Bold) },
+                { "normal", normalFont }
+            };
+        }
 
-            Dictionary<String, Brush> colours = new Dictionary<string, Brush>
+
+        Dictionary<String, Brush> colours = new Dictionary<string, Brush>
             {
                 { "red", new SolidBrush(Color.Red) },
                 { "yellow", new SolidBrush(Color.Yellow) },
@@ -88,10 +101,12 @@ namespace EDMCOverlay
                 { "black", new SolidBrush(Color.Black) },
             };
 
-            Dictionary<String, Font> fontSizes = new Dictionary<string, Font>
-            {
-                { "large", large },                
-            };
+
+      
+
+        private void StartUpdate()
+        {
+            Graphics draw = null;
 
             
             while (this.run)
@@ -101,7 +116,7 @@ namespace EDMCOverlay
                     if (draw == null)
                     {
                         draw = Glass.CreateGraphics();
-                        draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                        draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
                     }
 
                     if (Graphics == null) continue;
@@ -133,13 +148,10 @@ namespace EDMCOverlay
                                     }
                                     
                                     Graphic g = gfx.RealGraphic;
-                                    Font size = normal;
-                                    if (g.Size != null)
-                                        fontSizes.TryGetValue(g.Size, out size);                                    
-                                    Brush paint = null;
-                                    if (colours.TryGetValue(g.Color, out paint))
+
+                                    if (!String.IsNullOrEmpty(g.Text))
                                     {
-                                        draw.DrawString(gfx.RealGraphic.Text, size, paint, (float)g.X, (float)g.Y);
+                                        DrawText(draw, g);
                                     }
                                 }
                             }));
@@ -151,6 +163,16 @@ namespace EDMCOverlay
                 
                 System.Threading.Thread.Sleep(1000 / FPS);
             }
+        }
+
+        private void DrawText(Graphics draw, Graphic g)
+        {
+            Font size = normalFont;
+            if (g.Size != null)
+                fontSizes.TryGetValue(g.Size, out size);
+            Brush paint = null;
+            if (colours.TryGetValue(g.Color, out paint))
+                draw.DrawString(g.Text, size, paint, (float)g.X, (float)g.Y);
         }
     }
 }
