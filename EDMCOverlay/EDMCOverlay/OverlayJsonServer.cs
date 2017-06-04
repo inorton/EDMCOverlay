@@ -81,7 +81,7 @@ namespace EDMCOverlay
         {
             lock (_graphics)
             {
-                if (String.IsNullOrWhiteSpace(request.Text))
+                if (String.IsNullOrWhiteSpace(request.Text) && String.IsNullOrEmpty(request.Shape) )
                 {
                     if (_graphics.ContainsKey(request.Id))
                     {

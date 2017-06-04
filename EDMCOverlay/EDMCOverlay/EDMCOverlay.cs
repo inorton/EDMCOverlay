@@ -17,7 +17,18 @@ namespace EDMCOverlay
             OverlayRenderer xr = (OverlayRenderer)obj;
             int i = 0;
             Graphic test = new Graphic();
-    
+
+            Graphic rect = new Graphic();
+            rect.Shape = "rect";
+            rect.X = 200;
+            rect.Y = 100;
+            rect.W = 150;
+            rect.H = 70;
+            rect.TTL = 10;
+            rect.Color = "#780000ff";
+            rect.Fill = "#660000ff";
+            rect.Id = "rectangle";
+
             while(true)
             {
                 System.Threading.Thread.Sleep(100);
@@ -29,6 +40,8 @@ namespace EDMCOverlay
                 test.Color = "red";
 
                 server.SendGraphic(test, 1);
+                server.SendGraphic(rect, 1);
+                
             }
         }
 

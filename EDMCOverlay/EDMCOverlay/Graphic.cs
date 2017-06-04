@@ -13,8 +13,11 @@ namespace EDMCOverlay
         // normal or large
         public String Size { get; set; }
 
-        // a colour name "red", "yellow", "green", "blue"
+        // a colour name "red", "yellow", "green", "blue" or "#rrggbb" or "#aarrggbb"
         public String Color { get; set; }
+
+        // a shape fill colour name "red", "yellow", "green", "blue" or "#rrggbb" or "#aarrggbb"
+        public String Fill { get; set; }
 
         // divide the screen by 10 rows
         public int Y { get; set; }

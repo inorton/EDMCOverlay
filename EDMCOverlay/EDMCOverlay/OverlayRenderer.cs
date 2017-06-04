@@ -102,7 +102,47 @@ namespace EDMCOverlay
             };
 
 
-      
+        private Brush GetBrush(String colour)
+        {
+            Brush brush = null;
+
+            if (String.IsNullOrWhiteSpace(colour)) return null;
+            
+            if (colours.TryGetValue(colour, out brush))
+            {
+                return brush;
+            }
+
+            try
+            {
+                if (colour.StartsWith("#"))
+                {                         
+                    if (colour.Length == 7) // #rrggbb
+                    {
+                        int r = Convert.ToInt32(colour.Substring(1, 2), 16);
+                        int g = Convert.ToInt32(colour.Substring(3, 2), 16);
+                        int b = Convert.ToInt32(colour.Substring(5, 2), 16);
+
+                        Color newcolour = Color.FromArgb(r, g, b);
+                        colours.Add(colour, new SolidBrush(newcolour));
+
+                    }
+                    if (colour.Length == 9) // #aarrggbb
+                    {
+                        int a = Convert.ToInt32(colour.Substring(1, 2), 16);
+                        int r = Convert.ToInt32(colour.Substring(3, 2), 16);
+                        int g = Convert.ToInt32(colour.Substring(5, 2), 16);
+                        int b = Convert.ToInt32(colour.Substring(7, 2), 16);
+
+                        Color newcolour = Color.FromArgb(a, r, g, b);
+                        colours.Add(colour, new SolidBrush(newcolour));
+                    }
+                }
+            } catch (Exception ignore)
+            {                
+            }
+            return null;
+        }
 
         private void StartUpdate()
         {
@@ -149,9 +189,16 @@ namespace EDMCOverlay
                                     
                                     Graphic g = gfx.RealGraphic;
 
-                                    if (!String.IsNullOrEmpty(g.Text))
+                                    if (!String.IsNullOrEmpty(g.Shape))
                                     {
-                                        DrawText(draw, g);
+                                        DrawShape(draw, g);
+                                    }
+                                    else
+                                    {
+                                        if (!String.IsNullOrEmpty(g.Text))
+                                        {
+                                            DrawText(draw, g);
+                                        }
                                     }
                                 }
                             }));
@@ -165,13 +212,31 @@ namespace EDMCOverlay
             }
         }
 
+        private void DrawShape(Graphics draw, Graphic g)
+        {
+            if (g.Shape.Equals("rect"))
+            {
+                Brush fill = GetBrush(g.Fill);
+                if (fill != null)
+                {                    
+                    draw.FillRectangle(fill, g.X, g.Y, g.W, g.H);
+                }
+
+                Brush paint = GetBrush(g.Color);
+                if (paint != null) { 
+                    Pen p = new Pen(paint);
+                    draw.DrawRectangle(p, g.X, g.Y, g.W, g.H);
+                }
+            }
+        }
+
         private void DrawText(Graphics draw, Graphic g)
         {
             Font size = normalFont;
             if (g.Size != null)
                 fontSizes.TryGetValue(g.Size, out size);
-            Brush paint = null;
-            if (colours.TryGetValue(g.Color, out paint))
+            Brush paint = GetBrush(g.Color);
+            if (paint != null)
                 draw.DrawString(g.Text, size, paint, (float)g.X, (float)g.Y);
         }
     }
