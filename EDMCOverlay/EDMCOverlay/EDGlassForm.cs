@@ -41,15 +41,14 @@ namespace EDMCOverlay
 
         public EDGlassForm(System.Diagnostics.Process follow)
         {            
-            this.Opacity = 0.9;      // Tweak as desired
+            this.Opacity = 0.8;      // Tweak as desired
             this.FormBorderStyle = FormBorderStyle.None;
             this.BackColor = System.Drawing.Color.Black;
             this.ControlBox = false;
             this.ShowInTaskbar = false;
             this.StartPosition = FormStartPosition.Manual;
             this.AutoScaleMode = AutoScaleMode.None;
-            this.ClientSize = new Size(100, 100);
-            this.TopMost = true;
+            this.ClientSize = new Size(100, 100);            
             this.DoubleBuffered = true;
 
             this.Name = "EDMC Overlay Window";
@@ -81,7 +80,7 @@ namespace EDMCOverlay
             this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
                 ControlStyles.AllPaintingInWmPaint |
                 ControlStyles.DoubleBuffer |
-                ControlStyles.UserPaint |
+                ControlStyles.UserPaint |                
                 ControlStyles.Opaque |
                 ControlStyles.ResizeRedraw |
                 ControlStyles.SupportsTransparentBackColor, true);

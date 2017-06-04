@@ -25,5 +25,14 @@ namespace EDMCOverlay
         // seconds to display, if zero this will default to a 10 second life,
         // any negative number will display the message forever (or until the client quits)
         public int TTL { get; set; }
+
+        // width of shape
+        public int W { get; set; }
+        
+        // height of shape
+        public int H { get; set; }
+
+        // Shape name
+        public String Shape { get; set; }
     }
 }

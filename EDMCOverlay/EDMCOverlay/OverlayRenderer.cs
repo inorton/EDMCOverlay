@@ -15,7 +15,7 @@ namespace EDMCOverlay
     {
         public const string EDWindowName = "Elite - Dangerous(CLIENT)";
         public const string EDProgramName = "EliteDangerous64";
-        public const int FPS = 30;
+        public const int FPS = 20;
 
         private System.Diagnostics.Process _game;
 
@@ -47,7 +47,7 @@ namespace EDMCOverlay
         {
             ThreadPool.QueueUserWorkItem((x) =>
             {
-                this.Update();
+                this.StartUpdate();
             });
         }
 
@@ -72,68 +72,76 @@ namespace EDMCOverlay
         }
 
 
-        private void Update()
+        private void StartUpdate()
         {
             Graphics draw = null;
 
-            Font normal = new Font(FontFamily.GenericSansSerif, (float)14.0, FontStyle.Regular);
-            Font large = new Font(FontFamily.GenericSansSerif, (float)19.0, FontStyle.Bold);
-
-            Brush red = new SolidBrush(Color.Red);
-            Brush yellow = new SolidBrush(Color.Yellow);
-            Brush green = new SolidBrush(Color.Green);
-            Brush blue = new SolidBrush(Color.Blue);
+            Font normal = new Font(FontFamily.GenericMonospace, (float)14.0, FontStyle.Regular);
+            Font large = new Font(FontFamily.GenericMonospace, (float)19.0, FontStyle.Bold);
 
             Dictionary<String, Brush> colours = new Dictionary<string, Brush>
             {
-                { "red", red },
-                { "yellow", yellow },
-                { "green", green },
-                { "blue", blue },
+                { "red", new SolidBrush(Color.Red) },
+                { "yellow", new SolidBrush(Color.Yellow) },
+                { "green", new SolidBrush(Color.Green) },
+                { "blue", new SolidBrush(Color.Blue) },
+                { "black", new SolidBrush(Color.Black) },
+            };
+
+            Dictionary<String, Font> fontSizes = new Dictionary<string, Font>
+            {
+                { "large", large },                
             };
 
             
             while (this.run)
             {
-
-                // _controller.Update();
                 if (Glass != null)
                 {
                     if (draw == null)
                     {
                         draw = Glass.CreateGraphics();
-                        draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                        draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
                     }
 
                     if (Graphics == null) continue;
 
-                    if (GetForegroundWindow() == Glass.Follow.MainWindowHandle)
+
+                    String title = GetActiveWindowTitle();
+                    IntPtr activeWindow = GetForegroundWindow();
+
+                    if (activeWindow != Glass.Follow.MainWindowHandle)
                     {
+                        Glass.BeginInvoke(new Action(() =>
+                        {
+                            draw.Clear(Color.Black);
+                        }));
+                    } else {
                         lock (Graphics)
                         {
                             Glass.BeginInvoke(new Action(() =>
                             {
+                                Glass.TopMost = true;
                                 draw.Clear(Color.Black);
-                                foreach (var gfx in Graphics.Values)
+                                foreach (var id in Graphics.Keys.ToArray())
                                 {
+                                    var gfx = Graphics[id];
+                                    if (gfx.Expired)
+                                    {
+                                        Graphics.Remove(id);
+                                        continue;
+                                    }
+                                    
                                     Graphic g = gfx.RealGraphic;
                                     Font size = normal;
-                                    if (g.Size != null && g.Size.Equals("large"))
-                                    {
-                                        size = large;
-                                    }
+                                    if (g.Size != null)
+                                        fontSizes.TryGetValue(g.Size, out size);                                    
                                     Brush paint = null;
                                     if (colours.TryGetValue(g.Color, out paint))
                                     {
                                         draw.DrawString(gfx.RealGraphic.Text, size, paint, (float)g.X, (float)g.Y);
                                     }
                                 }
-
-
-                                System.Drawing.Rectangle rectangle = new System.Drawing.Rectangle(
-                                   50, 10, 115, 115);
-                                draw.DrawEllipse(System.Drawing.Pens.Red, rectangle);
-                                draw.DrawRectangle(System.Drawing.Pens.Green, rectangle);
                             }));
                         }
 
