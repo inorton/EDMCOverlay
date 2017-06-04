@@ -14,9 +14,9 @@ a program such as EDMC to display simple messages in the game's DirectX window.
 ## Installation
 
 This is released as a standard EDMC Plugin, simple unpack the archive into the EDMC
-plugin folder.  Releases of EDMC Overlay includes a binary copy of the Overlay.NET
-library from https://github.com/lolp1/Overlay.NET. This copy is used under the same
-MIT license (below) as EDMC Overlay.
+plugin folder.  Releases of EDMC Overlay are in part inspired by the Overlay.NET
+library from https://github.com/lolp1/Overlay.NET. Though it no longer contains this
+library.
 
 ## MIT License
 
@@ -52,10 +52,17 @@ Like so:
 ```
 {"id": "test1", "text": "You are low on fuel!", "size", "normal", color": "red", "x": 200, "y": 100, "ttl": 8}
 ```
+Supported colors values are:
+ "red", "green", "yellow", "blue" or "#rrggbb".
 
-Supported colors values are: "red", "green", "yellow", "blue".
+Supported size values are: 
+ "normal" and "large"
 
-Supported size values are: "normal" and "large"
+Additionally, you may draw rectanles by setting the "shap" to "rect" and setting the "color" and/or "fill" values.
+
+```
+{"id": "fred", "shape": "rect", "x": 100, "y": 10, "w": 30:, "h": 5, "fill": "red", "color", "#ccff00"}
+```
 
 The server will process this as an instruction to display the message "You are low on fuel!"
 in red text at 200,100 for 8 seconds.

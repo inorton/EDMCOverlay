@@ -26,12 +26,6 @@ namespace EDMCOverlay
         private bool run = true;
 
         private Thread renderThread;
-        
-        public bool Attached
-        {
-            get { return _game != null && !_game.HasExited; }
-        }
-
 
         public System.Diagnostics.Process GetGame()
         {
@@ -147,7 +141,6 @@ namespace EDMCOverlay
         private void StartUpdate()
         {
             Graphics draw = null;
-
             
             while (this.run)
             {
