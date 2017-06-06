@@ -1,0 +1,11 @@
+EDMCOverlay/.vs/
+EDMCOverlay/EDMCOverlay/EDMCOverlay.csproj.user
+.idea/
+Plugins/
+*.pyc
+*.pyo
+*.dll
+*.exe
+*.zip
+*.log
+*~

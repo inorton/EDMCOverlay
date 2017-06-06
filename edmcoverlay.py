@@ -92,6 +92,7 @@ class Overlay(object):
         :return:
         """
         if not self.connection:
+            ensure_service()
             self.connect()
 
         msg = {"id": msgid,
