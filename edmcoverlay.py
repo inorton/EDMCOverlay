@@ -24,12 +24,14 @@ def find_server_program():
     """
 
     locations = [
-        os.path.join(HERE, "EDMCOverlay", "EDMCOverlay", "bin", "Debug", PROG),
+        os.path.join(HERE, PROG),
+        os.path.join(HERE, "EDMCOverlay", PROG),
         os.path.join(HERE, "EDMCOverlay", "EDMCOverlay", "bin", "Release", PROG),
-        os.path.join(HERE, "EDMCOverlay", PROG)
+        os.path.join(HERE, "EDMCOverlay", "EDMCOverlay", "bin", "Debug", PROG),
     ]
     for item in locations:
         if os.path.isfile(item):
+            print "found {}...".format(item)
             return item
     return None
 
@@ -51,13 +53,19 @@ def ensure_service():
         # if it isnt running, start it
         try:
             if _service:
-                if not _service.poll():
+                if _service.poll() is not None:
                     _service = None
             if not _service:
-                _service = subprocess.Popen([program], cwd=HERE)
+                print "starting {}".format(program)
+                exedir = os.path.abspath(os.path.dirname(program))
+                _service = subprocess.Popen([program], cwd=exedir)
+
             time.sleep(2)
+            if _service.poll() is not None:
+                subprocess.check_call([program], cwd=exedir)
+                raise Exception("{} exited".format(program))
         except Exception as err:
-            pass
+            print "error in ensure_service: {}".format(err)
 
 
 class Overlay(object):
@@ -105,12 +113,12 @@ class Overlay(object):
             self.connection.send(json.dumps(msg))
             self.connection.send("\n")
         except Exception as err:
-            print err
+            print "error in send_message: {}".format(err)
             self.connection = None
             raise
 
 
-def testconsole():
+def debugconsole():
     """
     Print stuff
     """
@@ -120,7 +128,6 @@ def testconsole():
     loader.plugin_start()
 
     cl = Overlay()
-    cl.connect()
 
     print >> sys.stderr, "Reading..\n"
     while True:
@@ -130,4 +137,4 @@ def testconsole():
 
 
 if __name__ == "__main__":
-    testconsole()
+    debugconsole()

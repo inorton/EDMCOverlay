@@ -6,12 +6,9 @@ namespace EDMCOverlay
 {
     public class EDMCOverlay
     {
-        public static Logger Logger => loggerInstance;
-
-        static Logger loggerInstance = new Logger();
+        public static Logger Logger = Logger.GetInstance();
         static OverlayJsonServer server;
-
-
+        
         private static void TestThread(Object obj)
         {
             OverlayRenderer xr = (OverlayRenderer)obj;
@@ -49,9 +46,16 @@ namespace EDMCOverlay
         {
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {
+                Logger.LogMessage(String.Format("unhandled exception!!: {0} {1}", sender, args));
                 Environment.Exit(1);
             };
-            loggerInstance.Setup("edmcoverlay.log");
+            String appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            String edmc = System.IO.Path.Combine(appdata, "EDMarketConnector");
+            String plugins = System.IO.Path.Combine(edmc, "plugins");
+
+            Logger.Setup(System.IO.Path.Combine(plugins, "edmcoverlay.log"));
+            Logger.LogMessage("starting..");
+            Logger.Subsystem = typeof(EDMCOverlay);
             try
             {
                 if (argv.Length > 0)
@@ -74,14 +78,7 @@ namespace EDMCOverlay
             }
             catch (Exception err)
             {
-                try
-                {
-                    loggerInstance.LogMessage(err.ToString());
-                }
-                catch (Exception unhandled)
-                {
-                    // logger problem?
-                }
+                Logger.LogMessage(String.Format("exiting!: {0}", err.ToString()));
                 Environment.Exit(0);
             }
         }

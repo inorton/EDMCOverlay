@@ -19,6 +19,8 @@ namespace EDMCOverlay
         public const int DefaultTtl = 5;
         public const int MaxClients = 5;
 
+        public Logger Logger = Logger.GetInstance(typeof(OverlayJsonServer));
+
         public int Port { get; private set; }
 
         private readonly TcpListener _listener;
@@ -33,7 +35,7 @@ namespace EDMCOverlay
 
         public OverlayJsonServer(int port, OverlayRenderer renderer)
         {
-            this.Port = port;
+            this.Port = port;            
             this._renderer = renderer;
             this._listener = new TcpListener(IPAddress.Loopback, this.Port);
         }
@@ -45,6 +47,7 @@ namespace EDMCOverlay
 
             lock (_graphics)
             {
+                Logger.LogMessage("JSON server thread startup");
                 var banner = new Graphic
                 {
                     TTL = 5,
@@ -70,7 +73,7 @@ namespace EDMCOverlay
                 }
 
                 var client = _listener.AcceptTcpClient();
-
+                Logger.LogMessage(String.Format("New connection from {0}", client.Client.RemoteEndPoint));
                 Thread conn = new Thread(new ParameterizedThreadStart(ServerThread));
                 _threads.Add(conn);
                 conn.Start(client);
@@ -119,15 +122,20 @@ namespace EDMCOverlay
                     while (client.Connected)
                     {
                         var line = reader.ReadLine();
-
-                        Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
-                        SendGraphic(request, clientId);
+                        if (!String.IsNullOrWhiteSpace(line))
+                        {
+                            Logger.LogMessage("got message..");
+                            Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
+                            SendGraphic(request, clientId);
+                            Logger.LogMessage("sent graphic..");
+                        }
                     }
                 }
             }
             catch (Exception err)
             {
                 // maybe log stuff here..
+                Logger.LogMessage(String.Format("Exception: {0}", err));
                 return;
             }
             finally

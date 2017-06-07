@@ -18,21 +18,19 @@ namespace EDMCOverlay
         public const string EDProgramName = "EliteDangerous64";
         public const int FPS = 20;
 
-        private System.Diagnostics.Process _game;
-
+        Logger Logger = Logger.GetInstance(typeof(OverlayRenderer));
+        
         public EDGlassForm Glass { get; set; }
         public Dictionary<String, InternalGraphic> Graphics { get; set; }
 
         private bool run = true;
-
-        private Thread renderThread;
 
         public System.Diagnostics.Process GetGame()
         {
             System.Diagnostics.Process process = System.Diagnostics.Process.GetProcessesByName(EDProgramName).FirstOrDefault();
             if (process == null)
             {
-                Console.WriteLine("ED not running");
+                Logger.LogMessage(String.Format("Can't find running {0}", EDProgramName));
                 System.Environment.Exit(0);
             }
             return process;
@@ -72,6 +70,7 @@ namespace EDMCOverlay
 
         public void LoadFonts()
         {
+            Logger.LogMessage("Loading fonts..");
             byte[] data = Properties.Resources.EUROCAPS;
             IntPtr ptr = Marshal.AllocCoTaskMem(data.Length);
             Marshal.Copy(data, 0, ptr, data.Length);
@@ -133,7 +132,8 @@ namespace EDMCOverlay
                     }
                 }
             } catch (Exception ignore)
-            {                
+            {
+                Logger.LogMessage(String.Format("Exception: {0}", ignore));
             }
             return null;
         }
@@ -141,7 +141,7 @@ namespace EDMCOverlay
         private void StartUpdate()
         {
             Graphics draw = null;
-            
+            Logger.LogMessage("Starting update loop");
             while (this.run)
             {
                 if (Glass != null)
