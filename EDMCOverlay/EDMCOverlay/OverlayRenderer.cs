@@ -18,6 +18,9 @@ namespace EDMCOverlay
         public const string EDProgramName = "EliteDangerous64";
         public const int FPS = 20;
 
+        public const int VIRTUAL_WIDTH = 1280;
+        public const int VIRTUAL_HEIGHT = 960;
+
         Logger Logger = Logger.GetInstance(typeof(OverlayRenderer));
         
         public EDGlassForm Glass { get; set; }
@@ -205,8 +208,25 @@ namespace EDMCOverlay
             }
         }
 
+        
+
+        Point Scale(int x, int y)
+        {
+            Point p = new Point();
+
+            double x_factor = (double)(VIRTUAL_WIDTH) / this.Glass.ClientSize.Width;
+            double y_factor = (double)(VIRTUAL_HEIGHT) / this.Glass.ClientSize.Height;
+
+            p.X = (int)Math.Round(x * x_factor);
+            p.Y = (int)Math.Round(y * y_factor);
+
+            return p;
+        }
+
         private void DrawShape(Graphics draw, Graphic g)
         {
+            Point position = Scale(g.X, g.Y);
+
             if (g.Shape.Equals("rect"))
             {
                 Brush fill = GetBrush(g.Fill);
@@ -218,6 +238,7 @@ namespace EDMCOverlay
                 Brush paint = GetBrush(g.Color);
                 if (paint != null) { 
                     Pen p = new Pen(paint);
+                    Point size = Scale(g.W, g.H);
                     draw.DrawRectangle(p, g.X, g.Y, g.W, g.H);
                 }
             }
