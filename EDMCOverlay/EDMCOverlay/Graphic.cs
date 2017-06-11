@@ -37,5 +37,8 @@ namespace EDMCOverlay
 
         // Shape name
         public String Shape { get; set; }
+
+        // Vector
+        public VectorPoint[] Vector { get; set; }
     }
 }

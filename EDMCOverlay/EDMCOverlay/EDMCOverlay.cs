@@ -16,7 +16,7 @@ namespace EDMCOverlay
             Graphic test = new Graphic();
 
             Graphic rect = new Graphic();
-            rect.Shape = "rect";
+            rect.Shape = GraphicType.SHAPE_RECT;
             rect.X = 200;
             rect.Y = 100;
             rect.W = 150;
@@ -26,7 +26,44 @@ namespace EDMCOverlay
             rect.Fill = "#660000ff";
             rect.Id = "rectangle";
 
-            while(true)
+            Graphic vectorline = new Graphic();
+            vectorline.Shape = "vect";
+            vectorline.Color = "#cdcd00";
+            vectorline.Id = "graph";
+            vectorline.TTL = 10;
+            vectorline.Vector = new VectorPoint[]
+            {
+                new VectorPoint() {
+                    Color = "#00ff00",
+                    Text = "Point 1",
+                    Marker = "cross",
+                    X = 100,
+                    Y = 400,
+                },
+                new VectorPoint() {
+                    Color = "#ff0000",
+                    Text = "Point 2",
+                    Marker = "cross",
+                    X = 200,
+                    Y = 410,
+                },
+                new VectorPoint() {
+                    Color = "#ffff00",
+                    Text = "Point 3",
+                    Marker = "circle",
+                    X = 300,
+                    Y = 490,
+                },
+                new VectorPoint() {
+                    Color = "#ff00ff",
+                    Text = "Point 4",
+                    Marker = "cross",
+                    X = 400,
+                    Y = 410,
+                }
+            };
+
+            while (true)
             {
                 System.Threading.Thread.Sleep(100);
                 test.Text = String.Format("Hello {0}", i++);
@@ -38,6 +75,7 @@ namespace EDMCOverlay
 
                 server.SendGraphic(test, 1);
                 server.SendGraphic(rect, 1);
+                server.SendGraphic(vectorline, 1);
                 
             }
         }

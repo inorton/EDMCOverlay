@@ -82,8 +82,8 @@ namespace EDMCOverlay
             normalFont = new Font(fonts.Families[0], (float)12.0, FontStyle.Regular);
             fontSizes = new Dictionary<string, Font>
             {
-                { "large", new Font(fonts.Families[0], (float)19.0, FontStyle.Bold) },
-                { "normal", normalFont }
+                { GraphicType.FONT_LARGE, new Font(fonts.Families[0], (float)19.0, FontStyle.Bold) },
+                { GraphicType.FONT_NORMAL, normalFont }
             };
         }
 
@@ -112,28 +112,43 @@ namespace EDMCOverlay
             try
             {
                 if (colour.StartsWith("#"))
-                {                         
-                    if (colour.Length == 7) // #rrggbb
+                {
+                    int a = 0xff;
+                    int r = 0;
+                    int g = 0;
+                    int b = 0;
+                    Color newcolour = default(Color);
+                    bool defined = true;
+                    switch(colour.Length)
                     {
-                        int r = Convert.ToInt32(colour.Substring(1, 2), 16);
-                        int g = Convert.ToInt32(colour.Substring(3, 2), 16);
-                        int b = Convert.ToInt32(colour.Substring(5, 2), 16);
-
-                        Color newcolour = Color.FromArgb(r, g, b);
-                        colours.Add(colour, new SolidBrush(newcolour));
-
+                        case 7:
+                            // #rrggbb
+                            r = Convert.ToInt32(colour.Substring(1, 2), 16);
+                            g = Convert.ToInt32(colour.Substring(3, 2), 16);
+                            b = Convert.ToInt32(colour.Substring(5, 2), 16);                
+                            break;
+                        case 9:
+                            // #aarrggbb
+                            a = Convert.ToInt32(colour.Substring(1, 2), 16);
+                            r = Convert.ToInt32(colour.Substring(3, 2), 16);
+                            g = Convert.ToInt32(colour.Substring(5, 2), 16);
+                            b = Convert.ToInt32(colour.Substring(7, 2), 16);                            
+                            break;
+                        default:
+                            defined = false;
+                            break;
                     }
-                    if (colour.Length == 9) // #aarrggbb
-                    {
-                        int a = Convert.ToInt32(colour.Substring(1, 2), 16);
-                        int r = Convert.ToInt32(colour.Substring(3, 2), 16);
-                        int g = Convert.ToInt32(colour.Substring(5, 2), 16);
-                        int b = Convert.ToInt32(colour.Substring(7, 2), 16);
 
-                        Color newcolour = Color.FromArgb(a, r, g, b);
+                    if (defined)
+                    {
+                        newcolour = Color.FromArgb(a, r, g, b);
                         colours.Add(colour, new SolidBrush(newcolour));
                     }
                 }
+
+                if (colours.TryGetValue(colour, out brush))
+                    return brush;
+
             } catch (Exception ignore)
             {
                 Logger.LogMessage(String.Format("Exception: {0}", ignore));
@@ -141,70 +156,103 @@ namespace EDMCOverlay
             return null;
         }
 
+        private void Clear(Graphics draw)
+        {
+            if (Glass.InvokeRequired)
+            {
+                Glass.Invoke(new Action(() => { Clear(draw); }));
+                return;
+            }
+            draw.Clear(Color.Black);
+        }
+
+        private void Draw(Graphics draw)
+        {
+            if (Glass.InvokeRequired)
+            {
+                Glass.Invoke(new Action(() => { Draw(draw); }));
+                return;
+            }
+
+            Glass.TopMost = true;
+            Clear(draw);
+            foreach (var id in Graphics.Keys.ToArray())
+            {
+                var gfx = Graphics[id];
+                if (gfx.Expired)
+                {
+                    Graphics.Remove(id);
+                    continue;
+                }
+
+                Graphic g = gfx.RealGraphic;
+
+                if (!String.IsNullOrEmpty(g.Shape))
+                {
+                    DrawShape(draw, g);
+                }
+                else
+                {
+                    if (!String.IsNullOrEmpty(g.Text))
+                    {
+                        DrawText(draw, g);
+                    }
+                }
+            }
+            
+        }
+
         private void StartUpdate()
         {
+            DateTime lastframe = DateTime.Now;
             Graphics draw = null;
             Logger.LogMessage("Starting update loop");
+
+            double fixedwait = (1000 / FPS); // number of msec to wait assuming zero time to draw frame
+
             while (this.run)
             {
+                TimeSpan elapsed = DateTime.Now.Subtract(lastframe);
+
+                double wait = fixedwait - elapsed.TotalMilliseconds;                
+                if (wait > 0)
+                    System.Threading.Thread.Sleep((int)fixedwait);
+                
+                if (Glass == null)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                }
+
                 if (Glass != null)
                 {
+                    if (Glass.Follow != null && Glass.Follow.HasExited)
+                    {
+                        Logger.LogMessage(String.Format("{0} has exited. quitting.", Glass.Follow.ProcessName));
+                        System.Environment.Exit(0);
+                    }
+                    
                     if (draw == null)
                     {
-                        draw = Glass.CreateGraphics();
+                        draw = Glass.CreateGraphics();                        
                         draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
                     }
 
                     if (Graphics == null) continue;
-
-
-                    String title = GetActiveWindowTitle();
                     IntPtr activeWindow = GetForegroundWindow();
 
                     if (activeWindow != Glass.Follow.MainWindowHandle)
                     {
-                        Glass.BeginInvoke(new Action(() =>
-                        {
-                            draw.Clear(Color.Black);
-                        }));
+                        Clear(draw);
                     } else {
                         lock (Graphics)
                         {
-                            Glass.BeginInvoke(new Action(() =>
-                            {
-                                Glass.TopMost = true;
-                                draw.Clear(Color.Black);
-                                foreach (var id in Graphics.Keys.ToArray())
-                                {
-                                    var gfx = Graphics[id];
-                                    if (gfx.Expired)
-                                    {
-                                        Graphics.Remove(id);
-                                        continue;
-                                    }
-                                    
-                                    Graphic g = gfx.RealGraphic;
-
-                                    if (!String.IsNullOrEmpty(g.Shape))
-                                    {
-                                        DrawShape(draw, g);
-                                    }
-                                    else
-                                    {
-                                        if (!String.IsNullOrEmpty(g.Text))
-                                        {
-                                            DrawText(draw, g);
-                                        }
-                                    }
-                                }
-                            }));
+                            Draw(draw);
+                            lastframe = DateTime.Now;                            
                         }
-
                         Glass.FollowWindow();
                     }
                 }
                 
-                System.Threading.Thread.Sleep(1000 / FPS);
             }
         }
 
@@ -223,11 +271,60 @@ namespace EDMCOverlay
             return p;
         }
 
+        private void DrawMarker(Graphics draw, VectorPoint marker)
+        {
+            if (String.IsNullOrWhiteSpace(marker.Color)) return;
+            Brush brush = GetBrush(marker.Color);
+            if (brush == null) return;
+
+            Pen p = new Pen(brush);
+            if ( marker.Marker.Equals("cross"))
+            {
+                // draw 2 lines
+                draw.DrawLine(p, Scale(marker.X - 3, marker.Y - 3), Scale(marker.X + 3, marker.Y + 3));
+                draw.DrawLine(p, Scale(marker.X + 3, marker.Y - 3), Scale(marker.X - 3, marker.Y + 3));
+            }
+            if ( marker.Marker.Equals("circle"))
+            {
+                draw.DrawEllipse(p, new Rectangle(Scale(marker.X - 4, marker.Y - 4), new Size(6, 6)));
+            }
+        }
+
+        private void DrawVectorLine(Graphics draw, Brush brush, VectorPoint start, VectorPoint end)
+        {
+            if (brush == null) return;
+            Pen p = new Pen(brush);
+            draw.DrawLine(p, Scale(start.X, start.Y), Scale(end.X, end.Y));
+        }
+
+        private void DrawVector(Graphics draw, Graphic start)
+        {
+            // draw first point
+            if (start.Vector == null) return;
+            if (start.Vector.Length < 1) return;
+
+            var last = start.Vector.First();
+
+            for (int i = 1; i < start.Vector.Length; i++)
+            {
+                var current = start.Vector[i];
+                DrawVectorLine(draw, GetBrush(start.Color), last, current);
+                DrawMarker(draw,  last);
+                DrawTextEx(draw, GraphicType.FONT_NORMAL, last.Color, last.Text, last.X + 2, last.Y + 7);
+                last = current;
+            }
+
+            // draw last marker
+            DrawMarker(draw, last);
+            DrawTextEx(draw, GraphicType.FONT_NORMAL, last.Color, last.Text, last.X + 2, last.Y + 7);
+
+        }
+        
         private void DrawShape(Graphics draw, Graphic g)
         {
             Point position = Scale(g.X, g.Y);
 
-            if (g.Shape.Equals("rect"))
+            if (g.Shape.Equals(GraphicType.SHAPE_RECT))
             {
                 Brush fill = GetBrush(g.Fill);
                 if (fill != null)
@@ -241,17 +338,35 @@ namespace EDMCOverlay
                     Point size = Scale(g.W, g.H);
                     draw.DrawRectangle(p, g.X, g.Y, g.W, g.H);
                 }
+            } else
+            {
+                if (g.Shape.Equals(GraphicType.SHAPE_VECT))
+                {
+                    // a vector line
+                    DrawVector(draw, g);
+                }
             }
         }
 
         private void DrawText(Graphics draw, Graphic g)
         {
+            DrawTextEx(draw, g.Size, g.Color, g.Text, g.X, g.Y);
+        }
+
+        private void DrawTextEx(Graphics draw, String fontsize, String fontcolor, String text, int x, int y)
+        {
+            if (String.IsNullOrWhiteSpace(text)) return;
+
             Font size = normalFont;
-            if (g.Size != null)
-                fontSizes.TryGetValue(g.Size, out size);
-            Brush paint = GetBrush(g.Color);
+            if (fontsize != null)
+                fontSizes.TryGetValue(fontsize, out size);
+            Brush paint = GetBrush(fontcolor);
+            
             if (paint != null)
-                draw.DrawString(g.Text, size, paint, (float)g.X, (float)g.Y);
+            {
+                Point loc = Scale(x, y);
+                draw.DrawString(text, size, paint, (float)loc.X, (float)loc.Y);
+            }
         }
     }
 }

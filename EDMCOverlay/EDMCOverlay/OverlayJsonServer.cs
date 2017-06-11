@@ -53,7 +53,7 @@ namespace EDMCOverlay
                     TTL = 5,
                     Id = "_",
                     Color = "yellow",
-                    Size = "large",
+                    Size = GraphicType.FONT_LARGE,
                     X = 30,
                     Y = 130,
                     Text = "/EDMC Overlay/"
