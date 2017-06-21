@@ -41,25 +41,25 @@ namespace EDMCOverlay
 
         public EDGlassForm(System.Diagnostics.Process follow)
         {            
-            this.Opacity = 1.0;      // Tweak as desired
+            this.Opacity = 1.0; // Tweak as desired
             this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = System.Drawing.Color.Black;
+            this.BackColor = Color.Black;
             this.ControlBox = false;
             this.ShowInTaskbar = false;
             this.StartPosition = FormStartPosition.Manual;
             this.AutoScaleMode = AutoScaleMode.None;
             this.ClientSize = new Size(100, 100);            
-            this.DoubleBuffered = true;
+            this.DoubleBuffered = true;            
             this.Width = 1280;
             this.Height = 960;
 
             this.Name = "EDMC Overlay Window";
             this.Text = this.Name;
             this.TopMost = true;
-            this.TransparencyKey = System.Drawing.Color.Black;
+            this.TransparencyKey = Color.Black;
 
             int initialStyle = GetWindowLong(this.Handle, -20);
-            SetWindowLong(this.Handle, -20, initialStyle | 0x80000 | 0x20);
+            //SetWindowLong(this.Handle, -20, initialStyle | 0x80000 | 0x20);
             this.Follow = follow;
 
             // Disable Aero transitions, the plexiglass gets too visible
@@ -67,9 +67,7 @@ namespace EDMCOverlay
             {
                 int value = 1;
                 if (follow != null)
-                {
                     DwmSetWindowAttribute(follow.MainWindowHandle, DWMWA_TRANSITIONS_FORCEDISABLED, ref value, 4);
-                }
             }
         }
 
@@ -79,7 +77,8 @@ namespace EDMCOverlay
 
             FollowWindow();
             
-            this.SetStyle(ControlStyles.OptimizedDoubleBuffer |
+            this.SetStyle(
+                ControlStyles.OptimizedDoubleBuffer |
                 ControlStyles.AllPaintingInWmPaint |
                 ControlStyles.DoubleBuffer |
                 ControlStyles.UserPaint |                
@@ -95,7 +94,7 @@ namespace EDMCOverlay
 
             if (this.InvokeRequired)
             {
-                this.BeginInvoke(new Action(() => { FollowWindow(); }));
+                this.Invoke(new Action(() => { FollowWindow(); }));
             }
             else
             {

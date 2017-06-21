@@ -219,9 +219,7 @@ namespace EDMCOverlay
                     System.Threading.Thread.Sleep((int)fixedwait);
                 
                 if (Glass == null)
-                {
                     System.Threading.Thread.Sleep(1000);
-                }
 
                 if (Glass != null)
                 {
@@ -246,9 +244,9 @@ namespace EDMCOverlay
                     } else {
                         lock (Graphics)
                         {
-                            Draw(draw);
-                            lastframe = DateTime.Now;                            
+                            Draw(draw);           
                         }
+                        lastframe = DateTime.Now;
                         Glass.FollowWindow();
                     }
                 }
