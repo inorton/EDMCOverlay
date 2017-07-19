@@ -242,6 +242,13 @@ namespace EDMCOverlay
                     {
                         Clear(draw);
                     } else {
+                        
+                        // if there is nothing to draw, do a big sleep
+                        if (Graphics.Values.Count == 0)
+                        {
+                            Thread.Sleep(1000);
+                        }
+
                         lock (Graphics)
                         {
                             Draw(draw);           
