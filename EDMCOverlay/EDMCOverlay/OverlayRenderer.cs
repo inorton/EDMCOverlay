@@ -235,32 +235,33 @@ namespace EDMCOverlay
                         draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
                     }
 
-                    if (Graphics == null) continue;
+                    if (Graphics == null)
+                    {
+                        Thread.Sleep(500);
+                        continue;
+                    }
                     IntPtr activeWindow = GetForegroundWindow();
 
-                    if (activeWindow != Glass.Follow.MainWindowHandle)
+                    bool foreground = activeWindow == Glass.Follow.MainWindowHandle;
+
+                    // if there is nothing to draw, do a big sleep
+                    if (Graphics.Values.Count == 0 || !foreground)
                     {
                         Clear(draw);
-                    } else {
-                        
-                        // if there is nothing to draw, do a big sleep
-                        if (Graphics.Values.Count == 0)
-                        {
-                            Thread.Sleep(1000);
-                        }
-
+                        Thread.Sleep(1000);
+                    }
+                    if (foreground)
+                    {
                         lock (Graphics)
                         {
-                            Draw(draw);           
-                        }
-                        lastframe = DateTime.Now;
+                            Draw(draw);
+                        }                        
                         Glass.FollowWindow();
                     }
+                    lastframe = DateTime.Now;
                 }
-                
             }
         }
-
         
 
         Point Scale(int x, int y)
