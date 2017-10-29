@@ -121,6 +121,7 @@ namespace EDMCOverlay
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {
                 Logger.LogMessage(String.Format("unhandled exception!!: {0} {1}", sender, args));
+                Logger.LogMessage(((Exception)args.ExceptionObject).StackTrace);
                 Environment.Exit(1);
             };
 
