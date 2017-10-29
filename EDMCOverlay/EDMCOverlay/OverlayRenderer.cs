@@ -184,12 +184,14 @@ namespace EDMCOverlay
             Clear(draw);
             foreach (var id in Graphics.Keys.ToArray())
             {
-                var gfx = Graphics[id];
-                // clear everything one at a time                
-                var clear = new Graphic();
-                var inval = gfx.InvalidateRect;
-
+                var gfx = Graphics[id];                
                 Graphic g = gfx.RealGraphic;
+
+                if (gfx.Expired)
+                {
+                    Graphics.Remove(id);
+                    continue;
+                }
 
                 if (!String.IsNullOrEmpty(g.Shape))
                 {

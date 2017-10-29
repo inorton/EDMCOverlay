@@ -31,6 +31,7 @@ namespace EDMCOverlay
 
         public void LogMessage(String msg)
         {
+            Console.Error.WriteLine(msg);
             if (LogFile != null)
             {
                 try

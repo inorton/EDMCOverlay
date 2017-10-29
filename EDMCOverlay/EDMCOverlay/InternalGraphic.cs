@@ -34,26 +34,5 @@ namespace EDMCOverlay
                 return !(lifeleft > 0);
             }
         }
-        
-        public Rect InvalidateRect
-        {
-            get
-            {
-                var r = new Rect();
-                r.X = RealGraphic.X - 3;
-                r.Y = RealGraphic.Y - 3;
-
-                r.W = RealGraphic.W;
-                r.H = RealGraphic.H;
-
-                if (!String.IsNullOrWhiteSpace(RealGraphic.Text))
-                {
-                    r.H = 32;
-                    r.W = 24 * RealGraphic.Text.Length;
-                }
-
-                return r;
-            }
-        } 
     }
 }
