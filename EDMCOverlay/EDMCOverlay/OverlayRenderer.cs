@@ -354,9 +354,49 @@ namespace EDMCOverlay
             }
         }
 
+        Boolean AnchorPoint(Graphic g, ref Point p)
+        {
+            if (!String.IsNullOrWhiteSpace(g.Anchor))
+            {
+                switch (g.Anchor)
+                {
+                    case "N":
+                        p.X = p.X + VIRTUAL_WIDTH / 2;                        
+                        break;
+                    case "E":
+                        p.X = p.X + VIRTUAL_WIDTH;
+                        p.Y = p.Y + VIRTUAL_HEIGHT / 2;
+                        break;
+                    case "S":
+                        p.X = p.X + VIRTUAL_WIDTH / 2;
+                        p.Y = p.Y + VIRTUAL_HEIGHT;
+                        break;
+                    case "W":
+                        p.Y = p.Y + VIRTUAL_HEIGHT / 2;
+                        break;
+                    case "NE":
+                        p.X = p.X + VIRTUAL_WIDTH;
+                        break;
+                    case "NW":
+                        break;
+                    case "SE":
+                        p.X = p.X + VIRTUAL_WIDTH;
+                        p.Y = p.Y + VIRTUAL_HEIGHT;
+                        break;
+                    case "SW":
+                        p.Y = p.Y + VIRTUAL_HEIGHT;
+                        break;
+                }
+
+            }
+            return false;
+        }
+
         private void DrawText(Graphics draw, Graphic g)
         {
-            DrawTextEx(draw, g.Size, g.Color, g.Text, g.X, g.Y);
+            Point loc = Scale(g.X, g.Y);
+            
+            DrawTextEx(draw, g.Size, g.Color, g.Text, loc.X, loc.Y);
         }
 
         private void DrawTextEx(Graphics draw, String fontsize, String fontcolor, String text, int x, int y)
@@ -370,8 +410,7 @@ namespace EDMCOverlay
             
             if (paint != null)
             {
-                Point loc = Scale(x, y);
-                draw.DrawString(text, size, paint, (float)loc.X, (float)loc.Y);
+                draw.DrawString(text, size, paint, (float)x, (float)y);
             }
         }
     }
