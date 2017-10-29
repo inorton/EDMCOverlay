@@ -50,8 +50,6 @@ namespace EDMCOverlay
             this.AutoScaleMode = AutoScaleMode.None;
             this.ClientSize = new Size(100, 100);            
             this.DoubleBuffered = true;            
-            this.Width = 1280;
-            this.Height = 960;
 
             this.Name = "EDMC Overlay Window";
             this.Text = this.Name;

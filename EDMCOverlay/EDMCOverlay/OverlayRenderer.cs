@@ -22,8 +22,8 @@ namespace EDMCOverlay
 
         public const int VIRTUAL_ORIGIN_X = 20;
         public const int VIRTUAL_ORIGIN_Y = 40;
-        public const int VIRTUAL_WIDTH = 1200;
-        public const int VIRTUAL_HEIGHT = 920;
+        public const int VIRTUAL_WIDTH = 1350;
+        public const int VIRTUAL_HEIGHT = 1060;
 
         Logger Logger = Logger.GetInstance(typeof(OverlayRenderer));
         
