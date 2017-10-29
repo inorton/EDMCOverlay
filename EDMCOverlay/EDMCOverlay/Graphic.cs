@@ -25,6 +25,9 @@ namespace EDMCOverlay
         // divide the screen by 12 cols
         public int X { get; set; }
 
+        // anchor the graphic to an edge of the screen, N E S W NE NW SE SW
+        public string Anchor { get; set; }
+
         // seconds to display, if zero this will default to a 10 second life,
         // any negative number will display the message forever (or until the client quits)
         public int TTL { get; set; }
@@ -40,5 +43,8 @@ namespace EDMCOverlay
 
         // Vector
         public VectorPoint[] Vector { get; set; }
+
+        public int OldX { get; set; }
+        public int OldY { get; set; }
     }
 }
