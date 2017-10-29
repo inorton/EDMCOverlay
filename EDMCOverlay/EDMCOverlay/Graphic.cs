@@ -43,5 +43,8 @@ namespace EDMCOverlay
 
         // Vector
         public VectorPoint[] Vector { get; set; }
+
+        public int OldX { get; set; }
+        public int OldY { get; set; }
     }
 }

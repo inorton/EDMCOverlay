@@ -26,6 +26,42 @@ namespace EDMCOverlay
             rect.Fill = "#660000ff";
             rect.Id = "rectangle";
 
+            Graphic bounds = new Graphic();
+            bounds.Shape = "vect";
+            bounds.Color = "#aaff00";
+            bounds.Id = "bounds";
+            bounds.TTL = 10;            
+            bounds.Vector = new VectorPoint[] {
+                new VectorPoint() {
+                    Color = "#00ff00",
+                    Text = "NE",
+                    Marker = "cross",
+                    X = 1140,
+                    Y = 0,
+                },
+                new VectorPoint() {
+                    Color = "#00ff00",
+                    Text = "SE",
+                    Marker = "cross",
+                    X = 1140,
+                    Y = 840,
+                },
+                new VectorPoint() {
+                    Color = "#00ff00",
+                    Text = "SW",
+                    Marker = "cross",
+                    X = 0,
+                    Y = 840,
+                },
+                new VectorPoint() {
+                    Color = "#00ff00",
+                    Text = "NW",
+                    Marker = "cross",
+                    X = 0,
+                    Y = 0,
+                },
+            };
+
             Graphic vectorline = new Graphic();
             vectorline.Shape = "vect";
             vectorline.Color = "#cdcd00";
@@ -72,7 +108,7 @@ namespace EDMCOverlay
                 test.X = 2*i % 100;
                 test.Y = i % 100;
                 test.Color = "red";
-
+                server.SendGraphic(bounds, 1);
                 server.SendGraphic(test, 1);
                 server.SendGraphic(rect, 1);
                 server.SendGraphic(vectorline, 1);
@@ -87,6 +123,7 @@ namespace EDMCOverlay
                 Logger.LogMessage(String.Format("unhandled exception!!: {0} {1}", sender, args));
                 Environment.Exit(1);
             };
+
             String appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             String edmc = System.IO.Path.Combine(appdata, "EDMarketConnector");
             String plugins = System.IO.Path.Combine(edmc, "plugins");
@@ -96,15 +133,16 @@ namespace EDMCOverlay
             Logger.Subsystem = typeof(EDMCOverlay);
             try
             {
+                OverlayRenderer renderer = new OverlayRenderer();                
                 if (argv.Length > 0)
                 {
                     if (argv[0].Equals("--test"))
                     {
+                        renderer.TestMode = true;
                         System.Threading.ThreadPool.QueueUserWorkItem(TestThread);
                     }
                 }
-
-                OverlayRenderer renderer = new OverlayRenderer();
+                
                 server = new OverlayJsonServer(5010, renderer);
 
                 System.Threading.ThreadPool.QueueUserWorkItem((x) => server.Start());

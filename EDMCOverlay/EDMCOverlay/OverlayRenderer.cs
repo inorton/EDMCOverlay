@@ -18,8 +18,12 @@ namespace EDMCOverlay
         public const string EDProgramName = "EliteDangerous64";
         public const int FPS = 20;
 
-        public const int VIRTUAL_WIDTH = 1280;
-        public const int VIRTUAL_HEIGHT = 960;
+        public bool TestMode { get; set; }
+
+        public const int VIRTUAL_ORIGIN_X = 20;
+        public const int VIRTUAL_ORIGIN_Y = 40;
+        public const int VIRTUAL_WIDTH = 1200;
+        public const int VIRTUAL_HEIGHT = 920;
 
         Logger Logger = Logger.GetInstance(typeof(OverlayRenderer));
         
@@ -163,6 +167,8 @@ namespace EDMCOverlay
                 Glass.Invoke(new Action(() => { Clear(draw); }));
                 return;
             }
+
+            // this causes flickering
             draw.Clear(Color.Black);
         }
 
@@ -179,11 +185,29 @@ namespace EDMCOverlay
             foreach (var id in Graphics.Keys.ToArray())
             {
                 var gfx = Graphics[id];
+                // clear everything one at a time                
+                var clear = new Graphic();
+                var inval = gfx.InvalidateRect;
+                /*
+                clear.Color = "#000000";
+                clear.Fill = clear.Color;
+                clear.Shape = "rect";
+                clear.H = inval.H;
+                clear.W = inval.W;
+                clear.X = inval.X;
+                clear.Y = inval.Y;                
+                DrawShape(draw, clear);
+                // did it move?
+                clear.X = gfx.RealGraphic.OldX;
+                clear.Y = gfx.RealGraphic.OldY;
+                DrawShape(draw, clear);
+
                 if (gfx.Expired)
                 {
                     Graphics.Remove(id);
                     continue;
                 }
+                */
 
                 Graphic g = gfx.RealGraphic;
 
@@ -202,8 +226,23 @@ namespace EDMCOverlay
             
         }
 
+
+
+        void allocateBuffers(BufferedGraphicsContext bufctx)
+        {
+            
+        }
+
+        void swapBuffers(BufferedGraphicsContext bufctx)
+        {
+
+        }
+
         private void StartUpdate()
         {
+            var bufg = BufferedGraphicsManager.Current;
+            allocateBuffers(bufg);
+            
             DateTime lastframe = DateTime.Now;
             Graphics draw = null;
             Logger.LogMessage("Starting update loop");
@@ -231,7 +270,7 @@ namespace EDMCOverlay
                     
                     if (draw == null)
                     {
-                        draw = Glass.CreateGraphics();                        
+                        draw = Glass.CreateGraphics();                                       
                         draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
                     }
 
@@ -242,7 +281,7 @@ namespace EDMCOverlay
                     }
                     IntPtr activeWindow = GetForegroundWindow();
 
-                    bool foreground = activeWindow == Glass.Follow.MainWindowHandle;
+                    bool foreground = (activeWindow == Glass.Follow.MainWindowHandle) || TestMode;
 
                     // if there is nothing to draw, do a big sleep
                     if (Graphics.Values.Count == 0 || !foreground)
@@ -268,11 +307,11 @@ namespace EDMCOverlay
         {
             Point p = new Point();
 
-            double x_factor = (double)(VIRTUAL_WIDTH) / this.Glass.ClientSize.Width;
-            double y_factor = (double)(VIRTUAL_HEIGHT) / this.Glass.ClientSize.Height;
+            double x_factor = this.Glass.ClientSize.Width / (double)(VIRTUAL_WIDTH);
+            double y_factor = this.Glass.ClientSize.Height / (double)(VIRTUAL_HEIGHT);
 
-            p.X = (int)Math.Round(x * x_factor);
-            p.Y = (int)Math.Round(y * y_factor);
+            p.X = VIRTUAL_ORIGIN_X + (int)Math.Round(x * x_factor);
+            p.Y = VIRTUAL_ORIGIN_Y + (int)Math.Round(y * y_factor);
 
             return p;
         }
@@ -303,7 +342,7 @@ namespace EDMCOverlay
             draw.DrawLine(p, Scale(start.X, start.Y), Scale(end.X, end.Y));
         }
 
-        private void DrawVector(Graphics draw, Graphic start)
+        private void DrawVector(Graphics draw, Graphic start, bool erase)
         {
             // draw first point
             if (start.Vector == null) return;
@@ -315,7 +354,7 @@ namespace EDMCOverlay
             {
                 var current = start.Vector[i];
                 DrawVectorLine(draw, GetBrush(start.Color), last, current);
-                DrawMarker(draw,  last);
+                DrawMarker(draw, last);
                 DrawTextEx(draw, GraphicType.FONT_NORMAL, last.Color, last.Text, last.X + 2, last.Y + 7);
                 last = current;
             }
@@ -323,7 +362,11 @@ namespace EDMCOverlay
             // draw last marker
             DrawMarker(draw, last);
             DrawTextEx(draw, GraphicType.FONT_NORMAL, last.Color, last.Text, last.X + 2, last.Y + 7);
+        }        
 
+        private void DrawVector(Graphics draw, Graphic start)
+        {
+            DrawVector(draw, start, false);
         }
         
         private void DrawShape(Graphics draw, Graphic g)
@@ -354,55 +397,17 @@ namespace EDMCOverlay
             }
         }
 
-        Boolean AnchorPoint(Graphic g, ref Point p)
-        {
-            if (!String.IsNullOrWhiteSpace(g.Anchor))
-            {
-                switch (g.Anchor)
-                {
-                    case "N":
-                        p.X = p.X + VIRTUAL_WIDTH / 2;                        
-                        break;
-                    case "E":
-                        p.X = p.X + VIRTUAL_WIDTH;
-                        p.Y = p.Y + VIRTUAL_HEIGHT / 2;
-                        break;
-                    case "S":
-                        p.X = p.X + VIRTUAL_WIDTH / 2;
-                        p.Y = p.Y + VIRTUAL_HEIGHT;
-                        break;
-                    case "W":
-                        p.Y = p.Y + VIRTUAL_HEIGHT / 2;
-                        break;
-                    case "NE":
-                        p.X = p.X + VIRTUAL_WIDTH;
-                        break;
-                    case "NW":
-                        break;
-                    case "SE":
-                        p.X = p.X + VIRTUAL_WIDTH;
-                        p.Y = p.Y + VIRTUAL_HEIGHT;
-                        break;
-                    case "SW":
-                        p.Y = p.Y + VIRTUAL_HEIGHT;
-                        break;
-                }
-
-            }
-            return false;
-        }
-
         private void DrawText(Graphics draw, Graphic g)
         {
-            Point loc = Scale(g.X, g.Y);
             
-            DrawTextEx(draw, g.Size, g.Color, g.Text, loc.X, loc.Y);
+            DrawTextEx(draw, g.Size, g.Color, g.Text, g.X, g.Y);
         }
-
+        
         private void DrawTextEx(Graphics draw, String fontsize, String fontcolor, String text, int x, int y)
         {
             if (String.IsNullOrWhiteSpace(text)) return;
 
+            Point loc = Scale(x, y);
             Font size = normalFont;
             if (fontsize != null)
                 fontSizes.TryGetValue(fontsize, out size);
@@ -410,7 +415,7 @@ namespace EDMCOverlay
             
             if (paint != null)
             {
-                draw.DrawString(text, size, paint, (float)x, (float)y);
+                draw.DrawString(text, size, paint, (float)loc.X, (float)loc.Y);
             }
         }
     }
