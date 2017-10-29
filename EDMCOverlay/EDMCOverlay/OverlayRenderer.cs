@@ -188,26 +188,6 @@ namespace EDMCOverlay
                 // clear everything one at a time                
                 var clear = new Graphic();
                 var inval = gfx.InvalidateRect;
-                /*
-                clear.Color = "#000000";
-                clear.Fill = clear.Color;
-                clear.Shape = "rect";
-                clear.H = inval.H;
-                clear.W = inval.W;
-                clear.X = inval.X;
-                clear.Y = inval.Y;                
-                DrawShape(draw, clear);
-                // did it move?
-                clear.X = gfx.RealGraphic.OldX;
-                clear.Y = gfx.RealGraphic.OldY;
-                DrawShape(draw, clear);
-
-                if (gfx.Expired)
-                {
-                    Graphics.Remove(id);
-                    continue;
-                }
-                */
 
                 Graphic g = gfx.RealGraphic;
 
@@ -225,24 +205,54 @@ namespace EDMCOverlay
             }
             
         }
-
-
+        
+        BufferedGraphics back = null;
+        Graphics canvas = null;
 
         void allocateBuffers(BufferedGraphicsContext bufctx)
         {
-            
+            if (this.Glass == null) return;
+
+            lock (this) {
+                if (back != null)
+                {                    
+                    back.Dispose();
+                }
+                if (canvas == null)
+                {
+                    canvas = this.Glass.CreateGraphics();
+                }
+                canvas.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+                back = bufctx.Allocate(canvas, this.Glass.DisplayRectangle);
+            }
         }
 
         void swapBuffers(BufferedGraphicsContext bufctx)
         {
+            if (Glass.InvokeRequired)
+            {
+                Glass.Invoke(new Action(() => { swapBuffers(bufctx); }));
+                return;
+            }
 
+            if ( back != null)
+            {
+                back.Render();
+            }
+        }
+
+        Graphics getDraw()
+        {
+            if (back != null)
+            {
+                return back.Graphics;
+            }
+            return null;
         }
 
         private void StartUpdate()
         {
-            var bufg = BufferedGraphicsManager.Current;
-            allocateBuffers(bufg);
-            
+            var bufg = BufferedGraphicsManager.Current;            
             DateTime lastframe = DateTime.Now;
             Graphics draw = null;
             Logger.LogMessage("Starting update loop");
@@ -251,6 +261,7 @@ namespace EDMCOverlay
 
             while (this.run)
             {
+                if (back == null) allocateBuffers(bufg);
                 TimeSpan elapsed = DateTime.Now.Subtract(lastframe);
 
                 double wait = fixedwait - elapsed.TotalMilliseconds;                
@@ -270,11 +281,10 @@ namespace EDMCOverlay
                     
                     if (draw == null)
                     {
-                        draw = Glass.CreateGraphics();                                       
-                        draw.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+                        draw = getDraw();
                     }
 
-                    if (Graphics == null)
+                    if (Graphics == null || draw == null)
                     {
                         Thread.Sleep(500);
                         continue;
@@ -294,8 +304,9 @@ namespace EDMCOverlay
                         lock (Graphics)
                         {
                             Draw(draw);
-                        }                        
-                        Glass.FollowWindow();
+                            swapBuffers(bufg);
+                            Glass.FollowWindow();
+                        }
                     }
                     lastframe = DateTime.Now;
                 }
