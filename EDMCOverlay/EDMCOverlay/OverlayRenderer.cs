@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Drawing.Text;
+using System.Diagnostics;
 
 namespace EDMCOverlay
 {
@@ -293,21 +294,24 @@ namespace EDMCOverlay
                     }
                     IntPtr activeWindow = GetForegroundWindow();
 
-                    bool foreground = (activeWindow == Glass.Follow.MainWindowHandle) || TestMode;
+                    bool foreground = (activeWindow == Glass.Follow.MainWindowHandle);
 
                     // if there is nothing to draw, do a big sleep
                     if (Graphics.Values.Count == 0 || !foreground)
                     {
+                        Debug.WriteLine("window obscured");
                         Clear(draw);
+                        swapBuffers(bufg);
                         Thread.Sleep(1000);
-                    }
-                    if (foreground)
-                    {
-                        lock (Graphics)
+                    } else {
+                        if (foreground)
                         {
-                            Draw(draw);
-                            swapBuffers(bufg);
-                            Glass.FollowWindow();
+                            lock (Graphics)
+                            {
+                                Draw(draw);
+                                swapBuffers(bufg);
+                                Glass.FollowWindow();
+                            }
                         }
                     }
                     lastframe = DateTime.Now;
