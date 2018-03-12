@@ -390,7 +390,6 @@ namespace EDMCOverlay
         {
             if (g.Shape.Equals(GraphicType.SHAPE_RECT))
             {
-                Point 
                 Brush fill = GetBrush(g.Fill);
                 Rectangle shapeRect = new Rectangle(Scale(g.X, g.Y), new Size(Scale(g.W, g.H)));
                 if (fill != null)
