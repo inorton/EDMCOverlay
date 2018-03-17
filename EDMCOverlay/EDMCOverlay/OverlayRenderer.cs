@@ -388,21 +388,21 @@ namespace EDMCOverlay
         
         private void DrawShape(Graphics draw, Graphic g)
         {
-            Point position = Scale(g.X, g.Y);
+            Rectangle shapeRect = new Rectangle(Scale(g.X, g.Y), new Size(Scale(g.W, g.H)));
 
             if (g.Shape.Equals(GraphicType.SHAPE_RECT))
             {
                 Brush fill = GetBrush(g.Fill);
                 if (fill != null)
                 {                    
-                    draw.FillRectangle(fill, g.X, g.Y, g.W, g.H);
+                    draw.FillRectangle(fill, shapeRect);
                 }
 
                 Brush paint = GetBrush(g.Color);
                 if (paint != null) { 
                     Pen p = new Pen(paint);
                     Point size = Scale(g.W, g.H);
-                    draw.DrawRectangle(p, g.X, g.Y, g.W, g.H);
+                    draw.DrawRectangle(p, shapeRect);
                 }
             } else
             {
