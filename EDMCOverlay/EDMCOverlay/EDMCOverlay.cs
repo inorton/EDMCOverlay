@@ -127,9 +127,8 @@ namespace EDMCOverlay
 
             String appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             String edmc = System.IO.Path.Combine(appdata, "EDMarketConnector");
-            String plugins = System.IO.Path.Combine(edmc, "plugins");
 
-            Logger.Setup(System.IO.Path.Combine(plugins, "edmcoverlay.log"));
+            Logger.Setup(System.IO.Path.Combine(edmc, "edmcoverlay.log"));
             Logger.LogMessage("starting..");
             Logger.Subsystem = typeof(EDMCOverlay);
             try
