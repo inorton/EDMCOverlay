@@ -33,3 +33,13 @@ def journal_entry(cmdr, system, station, entry, state):
     :return:
     """
     ensure_service()
+
+
+def plugin_stop():
+    """
+    Edmc is going to exit.
+    :return:
+    """
+    client.send_raw({
+        "command": "exit"
+    })

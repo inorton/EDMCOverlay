@@ -106,6 +106,24 @@ namespace EDMCOverlay
             }
         }
 
+        public void ProcessCommand(Graphic request)
+        {
+            if (!String.IsNullOrEmpty(request.Command))
+            {
+                Logger.LogMessage("Got command: " + request.Command);
+                if (request.Command.Equals("exit"))
+                {
+                    System.Environment.Exit(0);
+                }
+
+                if (request.Command.Equals("noop"))
+                {
+                    return;
+                }                
+                Logger.LogMessage("Unknown command: " + request.Command);
+            }
+        }
+
         public void ServerThread(object obj)
         {
             var clientId = 0;
@@ -126,6 +144,9 @@ namespace EDMCOverlay
                         {
                             Logger.LogMessage("got message..");
                             Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
+
+                            ProcessCommand(request);
+
                             SendGraphic(request, clientId);
                             Logger.LogMessage("sent graphic..");
                         }

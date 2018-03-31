@@ -46,5 +46,9 @@ namespace EDMCOverlay
 
         public int OldX { get; set; }
         public int OldY { get; set; }
+
+        // Command
+        // Commands can be "exit" or "noop"
+        public String Command { get; set; }
     }
 }

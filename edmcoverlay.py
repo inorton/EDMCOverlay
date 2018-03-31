@@ -87,6 +87,20 @@ class Overlay(object):
         connection.connect((self.server, self.port))
         self.connection = connection
 
+    def send_raw(self, msg):
+        """
+        Encode a dict and send it to the server
+        :param msg:
+        :return:
+        """
+        try:
+            self.connection.send(json.dumps(msg))
+            self.connection.send("\n")
+        except Exception as err:
+            print "error in send_raw: {}".format(err)
+            self.connection = None
+            raise
+
     def send_message(self, msgid, text, color, x, y, ttl=4, size="normal"):
         """
         Send a message
@@ -109,13 +123,7 @@ class Overlay(object):
                "size": size,
                "x": x, "y": y,
                "ttl": ttl}
-        try:
-            self.connection.send(json.dumps(msg))
-            self.connection.send("\n")
-        except Exception as err:
-            print "error in send_message: {}".format(err)
-            self.connection = None
-            raise
+        self.send_raw(msg)
 
 
 def debugconsole():
