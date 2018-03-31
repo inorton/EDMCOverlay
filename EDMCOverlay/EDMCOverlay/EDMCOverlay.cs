@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace EDMCOverlay
 {
@@ -62,6 +63,29 @@ namespace EDMCOverlay
                 },
             };
 
+            List<Graphic> markers = new List<Graphic>();
+
+            // some markers
+            for (int m = 0; m < 6; m++) {
+                Graphic g = new Graphic();
+                g.Shape = "vect";
+                g.Color = "#ff2200";
+                g.TTL = 2;
+                g.Id = Guid.NewGuid().ToString();
+                g.Vector = new VectorPoint[]
+                {
+                    new VectorPoint()
+                    {
+                        Color = g.Color,
+                        Marker = (m % 2 == 0) ? "cross" : "circle",
+                        X= 630 + m * 3,
+                        Y = 145 - m * 3,
+                    },
+                };
+                markers.Add(g);
+            }
+
+
             Graphic vectorline = new Graphic();
             vectorline.Shape = "vect";
             vectorline.Color = "#cdcd00";
@@ -105,14 +129,17 @@ namespace EDMCOverlay
                 test.Text = String.Format("Hello {0}", i++);
                 test.Id = "test1";
                 test.TTL = 3;
-                test.X = 2*i % 100;
+                test.X = 2 * i % 100;
                 test.Y = i % 100;
                 test.Color = "red";
                 server.SendGraphic(bounds, 1);
                 server.SendGraphic(test, 1);
                 server.SendGraphic(rect, 1);
                 server.SendGraphic(vectorline, 1);
-                
+                foreach (var m in markers)
+                {
+                    server.SendGraphic(m, 1);
+                }
             }
         }
 

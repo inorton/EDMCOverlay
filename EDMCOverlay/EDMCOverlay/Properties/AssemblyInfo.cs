@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Ian Norton")]
 [assembly: AssemblyProduct("EDMCOverlay")]
-[assembly: AssemblyCopyright("2017")]
+[assembly: AssemblyCopyright("2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.0.2.13")]
-[assembly: AssemblyFileVersion("0.0.2.13")]
+[assembly: AssemblyVersion("0.0.4.10")]
+[assembly: AssemblyFileVersion("0.0.4.10")]
