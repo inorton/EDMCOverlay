@@ -138,17 +138,29 @@ namespace EDMCOverlay
                 {
                     StreamReader reader = new StreamReader(client.GetStream(), Encoding.UTF8);
                     while (client.Connected)
-                    {
-                        var line = reader.ReadLine();
-                        if (!String.IsNullOrWhiteSpace(line))
+                    {                        
+                        if (client.Client.Poll(100 * 1000, SelectMode.SelectRead))
                         {
-                            Logger.LogMessage("got message..");
-                            Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
+                            // the connection should block here if the client is still alive
+                            var line = reader.ReadLine();
 
-                            ProcessCommand(request);
+                            // poll returned true, we either have some data or the connection was closed by the client
+                            if (line == null)
+                            {
+                                Logger.LogMessage(String.Format("client {0} disconnected..", clientId));
+                                break;  // client disconnected
+                            }
 
-                            SendGraphic(request, clientId);
-                            Logger.LogMessage("sent graphic..");
+                            if (!String.IsNullOrWhiteSpace(line))
+                            {
+                                Logger.LogMessage("got message..");
+                                Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
+
+                                ProcessCommand(request);
+
+                                SendGraphic(request, clientId);
+                                Logger.LogMessage("sent graphic..");
+                            }
                         }
                     }
                 }
