@@ -37,7 +37,12 @@ namespace EDMCOverlay
             public int Top;
             public int Right;
             public int Bottom;
-        }
+        }       
+
+        public bool HalfSize { get; set; }
+
+        public int XOffset { get; set; }
+        public int YOffset { get; set; }
 
         public EDGlassForm(System.Diagnostics.Process follow)
         {            
@@ -99,8 +104,22 @@ namespace EDMCOverlay
                 RECT window = new RECT();
                 if (GetWindowRect(Follow.MainWindowHandle, ref window))
                 {
-                    this.Location = new Point(window.Left, window.Top);
-                    this.ClientSize = new Size(window.Right - window.Left, window.Bottom - window.Top);
+                    var pos = new Point(window.Left + this.XOffset, window.Top + this.YOffset);                    
+                    var siz = new Size(
+                        window.Right - window.Left - (2 * this.XOffset),
+                        window.Bottom - window.Top - (2 * this.YOffset));
+
+                    if (HalfSize)
+                    {
+                        pos.X = siz.Width / 3;
+                        pos.Y = siz.Height / 3;
+
+                        siz.Height = siz.Height / 2;
+                        siz.Width = siz.Width / 2;
+                    }
+
+                    this.Location = pos;
+                    this.ClientSize = siz;
                 }                
             }
         }

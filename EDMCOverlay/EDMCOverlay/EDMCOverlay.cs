@@ -37,36 +37,36 @@ namespace EDMCOverlay
                     Color = "#00ff00",
                     Text = "NE",
                     Marker = "cross",
-                    X = 1280,
+                    X = 1279,
                     Y = 0,
                 },
                 new VectorPoint() {
                     Color = "#00ff00",
                     Text = "SE",
                     Marker = "cross",
-                    X = 1280,
-                    Y = 960,
+                    X = 1279,
+                    Y = 1023,
                 },
                 new VectorPoint() {
                     Color = "#00ff00",
                     Text = "SW",
                     Marker = "cross",
                     X = 0,
-                    Y = 960,
+                    Y = 1023,
                 },
                 new VectorPoint() {
                     Color = "#00ff00",
                     Text = "NW",
                     Marker = "cross",
                     X = 0,
-                    Y = 0,
+                    Y = 1,
                 },
             };
 
             List<Graphic> markers = new List<Graphic>();
 
             // some markers
-            for (int m = 0; m < 6; m++) {
+            for (int m = 0; m < 32; m++) {
                 Graphic g = new Graphic();
                 g.Shape = "vect";
                 g.Color = "#ff2200";
@@ -78,8 +78,8 @@ namespace EDMCOverlay
                     {
                         Color = g.Color,
                         Marker = (m % 2 == 0) ? "cross" : "circle",
-                        X= 630 + m * 3,
-                        Y = 145 - m * 3,
+                        X= 130 + m * 8,
+                        Y = 345 - m * 8,
                     },
                 };
                 markers.Add(g);
@@ -123,6 +123,44 @@ namespace EDMCOverlay
                 }
             };
 
+            var box = new Graphic()
+            {
+                Shape = "rect",
+                Id = "box",
+                X = -1,
+                Y = -1,
+                W = 1281,
+                H = 1025,
+                Color = "#00ffff",
+                TTL = 2,                
+            };
+
+            var overflow = new Graphic()
+            {
+                Shape = "rect",
+                Id = "overflow",
+                TTL = 2,
+                X = 900,
+                Y = 600,
+                W = 500,
+                H = 600,
+                Color = "#ff00ff"
+            };
+
+            var underflow = new Graphic()
+            {
+                Shape = "rect",
+                Id = "underflow",
+                TTL = 2,
+                X = -200,
+                Y = -200,
+                W = 400,
+                H = 400,
+                Color = "#00ff22"
+            };
+
+            int colorcycle = 0;
+
             while (true)
             {
                 System.Threading.Thread.Sleep(100);
@@ -130,15 +168,23 @@ namespace EDMCOverlay
                 test.Id = "test1";
                 test.TTL = 3;
                 test.X = 2 * i % 100;
-                test.Y = i % 100;
-                test.Color = "red";
+                test.Y = i % 200;
+                test.Color = String.Format("#{0:X6}", colorcycle);
+
+                colorcycle += 3 + (255 * test.X);
+                
+                colorcycle = colorcycle % 0xffffff;
+
                 server.SendGraphic(bounds, 1);
                 server.SendGraphic(test, 1);
                 server.SendGraphic(rect, 1);
                 server.SendGraphic(vectorline, 1);
                 foreach (var m in markers)
                 {
+                    server.SendGraphic(box, 2);
                     server.SendGraphic(m, 1);
+                    server.SendGraphic(overflow, 2);
+                    server.SendGraphic(underflow, 2);
                 }
             }
         }
@@ -160,22 +206,32 @@ namespace EDMCOverlay
             Logger.Subsystem = typeof(EDMCOverlay);
             try
             {
-                OverlayRenderer renderer = new OverlayRenderer();                
-                if (argv.Length > 0)
+                OverlayRenderer renderer = new OverlayRenderer();
+
+                foreach (var arg in argv)
                 {
-                    if (argv[0].Equals("--test"))
+                    if (arg.Equals("--test"))
                     {
                         renderer.TestMode = true;
                         System.Threading.ThreadPool.QueueUserWorkItem(TestThread);
                     }
-                }
-                
-                server = new OverlayJsonServer(5010, renderer);
 
+                    if (arg.Equals("--foreground"))
+                    {
+                        renderer.ForceRender = true;
+                    }
+
+                    if (arg.Equals("--half"))
+                    {
+                        renderer.HalfSize = true;
+                    }
+                }            
+                server = new OverlayJsonServer(5010, renderer);
                 System.Threading.ThreadPool.QueueUserWorkItem((x) => server.Start());
 
                 EDGlassForm glass = new EDGlassForm(renderer.GetGame());
                 renderer.Glass = glass;
+                glass.HalfSize = renderer.HalfSize;
                 renderer.Graphics = server.Graphics;
                 System.Windows.Forms.Application.Run(renderer.Glass);
             }
