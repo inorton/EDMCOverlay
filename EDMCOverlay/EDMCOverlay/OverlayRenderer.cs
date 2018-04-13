@@ -327,10 +327,18 @@ namespace EDMCOverlay
             double x_factor = this.Glass.ClientSize.Width / (double)(VIRTUAL_WIDTH);
             double y_factor = this.Glass.ClientSize.Height / (double)(VIRTUAL_HEIGHT);
 
-            p.X = VIRTUAL_ORIGIN_X + (int)Math.Round(x * x_factor);
-            p.Y = VIRTUAL_ORIGIN_Y + (int)Math.Round(y * y_factor);
+            p.X = (int)Math.Round(x * x_factor);
+            p.Y = (int)Math.Round(y * y_factor);
 
             return p;
+        }
+
+        Point ScalePosition(int x, int y)
+        {
+            Point scaled = Scale(x, y);
+            scaled.X += VIRTUAL_ORIGIN_X;
+            scaled.Y += VIRTUAL_ORIGIN_Y;
+            return scaled;
         }
 
         private void DrawMarker(Graphics draw, VectorPoint marker)
@@ -343,12 +351,14 @@ namespace EDMCOverlay
             if ( marker.Marker.Equals("cross"))
             {
                 // draw 2 lines
-                draw.DrawLine(p, Scale(marker.X - 3, marker.Y - 3), Scale(marker.X + 3, marker.Y + 3));
-                draw.DrawLine(p, Scale(marker.X + 3, marker.Y - 3), Scale(marker.X - 3, marker.Y + 3));
+                draw.DrawLine(p, ScalePosition(marker.X - 3, marker.Y - 3), ScalePosition(marker.X + 3, marker.Y + 3));
+                draw.DrawLine(p, ScalePosition(marker.X + 3, marker.Y - 3), ScalePosition(marker.X - 3, marker.Y + 3));
             }
             if ( marker.Marker.Equals("circle"))
             {
-                draw.DrawEllipse(p, new Rectangle(Scale(marker.X - 4, marker.Y - 4), new Size(6, 6)));
+                draw.DrawEllipse(p, 
+                    new Rectangle(ScalePosition(marker.X - 4, marker.Y - 4), 
+                    new Size(Scale(6, 6))));
             }
         }
 
@@ -356,7 +366,7 @@ namespace EDMCOverlay
         {
             if (brush == null) return;
             Pen p = new Pen(brush);
-            draw.DrawLine(p, Scale(start.X, start.Y), Scale(end.X, end.Y));
+            draw.DrawLine(p, ScalePosition(start.X, start.Y), Scale(end.X, end.Y));
         }
 
         private void DrawVector(Graphics draw, Graphic start, bool erase)
@@ -388,7 +398,9 @@ namespace EDMCOverlay
         
         private void DrawShape(Graphics draw, Graphic g)
         {
-            Rectangle shapeRect = new Rectangle(Scale(g.X, g.Y), new Size(Scale(g.W, g.H)));
+            Rectangle shapeRect = new Rectangle(
+                ScalePosition(g.X, g.Y), 
+                new Size(Scale(g.W, g.H)));
 
             if (g.Shape.Equals(GraphicType.SHAPE_RECT))
             {
@@ -424,7 +436,7 @@ namespace EDMCOverlay
         {
             if (String.IsNullOrWhiteSpace(text)) return;
 
-            Point loc = Scale(x, y);
+            Point loc = ScalePosition(x, y);
             Font size = normalFont;
             if (fontsize != null)
                 fontSizes.TryGetValue(fontsize, out size);

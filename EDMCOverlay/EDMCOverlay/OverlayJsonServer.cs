@@ -137,6 +137,7 @@ namespace EDMCOverlay
                 using (TcpClient client = (TcpClient) obj)
                 {
                     StreamReader reader = new StreamReader(client.GetStream(), Encoding.UTF8);
+                    StringBuilder rxbuf = new StringBuilder(1024);
                     while (client.Connected)
                     {                        
                         if (client.Client.Poll(100 * 1000, SelectMode.SelectRead))
@@ -153,8 +154,12 @@ namespace EDMCOverlay
 
                             if (!String.IsNullOrWhiteSpace(line))
                             {
+                                // we have some data, add it to our rx buffer
+                                rxbuf.Append(line);
+                            
+                                // try and deserialize the buffer.
                                 Logger.LogMessage("got message..");
-                                Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
+                                Graphic request = JsonConvert.DeserializeObject<Graphic>(rxbuf.ToString());
 
                                 ProcessCommand(request);
 
