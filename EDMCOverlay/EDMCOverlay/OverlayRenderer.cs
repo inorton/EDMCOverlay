@@ -33,6 +33,9 @@ namespace EDMCOverlay
         public EDGlassForm Glass { get; set; }
         public Dictionary<String, InternalGraphic> Graphics { get; set; }
 
+        public Nullable<Point> ForceLocation { get; set; }
+        public Nullable<Size> ForceSize { get; set; }
+
         private bool run = true;
 
         public System.Diagnostics.Process GetGame()
@@ -280,6 +283,12 @@ namespace EDMCOverlay
                 {
                     Glass.XOffset = VIRTUAL_ORIGIN_X;
                     Glass.YOffset = VIRTUAL_ORIGIN_Y;
+
+                    if (this.ForceLocation.HasValue && this.ForceSize.HasValue)
+                    {
+                        Glass.ForceGeometry(this.ForceLocation.Value, this.ForceSize.Value);
+                    }
+
                     if (Glass.Follow != null && Glass.Follow.HasExited)
                     {
                         Logger.LogMessage(String.Format("{0} has exited. quitting.", Glass.Follow.ProcessName));

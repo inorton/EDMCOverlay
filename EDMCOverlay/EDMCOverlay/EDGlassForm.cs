@@ -44,6 +44,15 @@ namespace EDMCOverlay
         public int XOffset { get; set; }
         public int YOffset { get; set; }
 
+        Nullable<Point> forceLocation;
+        Nullable<Size> forceSize;
+
+        public void ForceGeometry(Point p, Size s)
+        {
+            forceLocation = p;
+            forceSize = s;
+        }
+
         public EDGlassForm(System.Diagnostics.Process follow)
         {            
             this.Opacity = 1.0; // Tweak as desired
@@ -126,7 +135,12 @@ namespace EDMCOverlay
                     }
                 }
 
-
+                if (forceLocation.HasValue && forceSize.HasValue)
+                {
+                    pos = forceLocation.Value;
+                    siz = forceSize.Value;
+                }
+                
                 this.Location = pos;
                 this.ClientSize = siz;
             }

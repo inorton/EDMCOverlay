@@ -225,6 +225,31 @@ namespace EDMCOverlay
                     {
                         renderer.HalfSize = true;
                     }
+
+                    if (arg.StartsWith("--geometry="))
+                    {
+                        // expect --geometry=X,Y,WxH
+                        var words = arg.Split(new char[] { '=' }, 1);
+                        if (words.Length == 2)
+                        {
+                            var parts = words[1].Split(new char[] { ',' });
+                            if (parts.Length == 3)
+                            {
+                                var x = Int32.Parse(parts[0]);
+                                var y = Int32.Parse(parts[1]);
+
+                                var geo = words[2].Split(new char[] { 'x' }, 1);
+                                if (geo.Length == 2)
+                                {
+                                    var w = Int32.Parse(geo[0]);
+                                    var h = Int32.Parse(geo[1]);
+
+                                    renderer.ForceLocation = new System.Drawing.Point(x, y);
+                                    renderer.ForceSize = new System.Drawing.Size(w, h);
+                                }
+                            }
+                        }
+                    }
                 }            
                 server = new OverlayJsonServer(5010, renderer);
                 System.Threading.ThreadPool.QueueUserWorkItem((x) => server.Start());
@@ -233,7 +258,7 @@ namespace EDMCOverlay
                 {
                     // elite isn't running?
                     // if we are in test mode, just use ourself
-                    if (renderer.TestMode)
+                    if (renderer.TestMode || renderer.ForceRender)
                     {
                         Logger.LogMessage("No game running, using fake test window");
                         game = Process.GetCurrentProcess();
