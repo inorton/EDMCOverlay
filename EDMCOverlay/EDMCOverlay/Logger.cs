@@ -5,12 +5,14 @@ namespace EDMCOverlay
 {
     public class Logger
     {
+        static object instanceLock = new object();
+
         static int MAX_LOG_BYTES = 1024 * 1024 * 5;
 
         public string LogFile { get; private set; }
 
         public Type Subsystem { get; set; }
-
+        
         public void Setup(String logPath)
         {
             LogFile = logPath;
@@ -25,28 +27,43 @@ namespace EDMCOverlay
 
             using (var ffs = new FileStream(LogFile, FileMode.OpenOrCreate))
             {
-
             }
         }
 
-        public void LogMessage(String msg)
+        public FileStream logFileStream;
+        public StreamWriter logStream;
+
+        public void Setup(Logger parent)
         {
+            this.LogFile = parent.LogFile;
+            this.logFileStream = parent.logFileStream;
+            this.logStream = parent.logStream;
+        }
+
+        public void LogMessage(String msg)
+        {            
             Console.Error.WriteLine(msg);
             if (LogFile != null)
             {
                 try
                 {
-                    using (var ffs = new FileStream(LogFile, FileMode.Append))
-                    using (var fos = new StreamWriter(ffs))
-                    {
-                        lock (instance)
+                    lock (instance)
+                    { 
+                        //using (var ffs = )
+                        //using (var fos = new StreamWriter(ffs))
+                        if (logStream == null) {
+                            logFileStream = new FileStream(LogFile, FileMode.Append);
+                            logStream = new StreamWriter(logFileStream);
+                        }
+
+                        if (logStream != null)
                         {
-                            fos.Write(DateTime.Now.ToString("s"));
+                            logStream.Write(DateTime.Now.ToString("s"));
                             if (Subsystem != null)
                             {
-                                fos.Write(" {0}:", Subsystem.Name);
+                                logStream.Write(" {0}:", Subsystem.Name);
                             }
-                            fos.WriteLine(" {0}", msg);
+                            logStream.WriteLine(" {0}", msg);
                         }
                     }
                 } catch (Exception fail)
@@ -60,9 +77,12 @@ namespace EDMCOverlay
         static Logger instance = null;
         public static Logger GetInstance()
         {
-            if (instance == null)
+            lock (instanceLock)
             {
-                instance = new Logger();
+                if (instance == null)
+                {
+                    instance = new Logger();
+                }
             }
             return instance;
         }
@@ -70,7 +90,7 @@ namespace EDMCOverlay
         public static Logger GetInstance(Type subsys)
         {
             var sub = new Logger();
-            sub.Setup(GetInstance().LogFile);
+            sub.Setup(GetInstance());
             sub.Subsystem = subsys;
             return sub;
         }

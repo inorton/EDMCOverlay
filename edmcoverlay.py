@@ -93,13 +93,17 @@ class Overlay(object):
         :param msg:
         :return:
         """
+        assert isinstance(msg, dict)
+
         try:
-            self.connection.send(json.dumps(msg))
+            data = json.dumps(msg)
+            self.connection.send(data)
             self.connection.send("\n")
         except Exception as err:
             print "error in send_raw: {}".format(err)
             self.connection = None
             raise
+        return None
 
     def send_message(self, msgid, text, color, x, y, ttl=4, size="normal"):
         """

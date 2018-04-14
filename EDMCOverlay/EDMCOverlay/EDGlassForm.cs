@@ -93,7 +93,10 @@ namespace EDMCOverlay
 
         public void FollowWindow()
         {
-            if (Follow == null) return;
+            if (Follow == null)
+            {                
+                return;
+            }
 
             if (this.InvokeRequired)
             {
@@ -102,10 +105,14 @@ namespace EDMCOverlay
             else
             {
                 RECT window = new RECT();
-                if (GetWindowRect(Follow.MainWindowHandle, ref window))
+                Point pos = new Point(300, 300);
+                Size siz = new Size(640, 400);
+
+                if (Process.GetCurrentProcess().Id != Follow.Id
+                    && GetWindowRect(Follow.MainWindowHandle, ref window))
                 {
-                    var pos = new Point(window.Left + this.XOffset, window.Top + this.YOffset);                    
-                    var siz = new Size(
+                    pos = new Point(window.Left + this.XOffset, window.Top + this.YOffset);
+                    siz = new Size(
                         window.Right - window.Left - (2 * this.XOffset),
                         window.Bottom - window.Top - (2 * this.YOffset));
 
@@ -117,10 +124,11 @@ namespace EDMCOverlay
                         siz.Height = siz.Height / 2;
                         siz.Width = siz.Width / 2;
                     }
+                }
 
-                    this.Location = pos;
-                    this.ClientSize = siz;
-                }                
+
+                this.Location = pos;
+                this.ClientSize = siz;
             }
         }
 

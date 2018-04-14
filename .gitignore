@@ -1,6 +1,7 @@
 EDMCOverlay/.vs/
 EDMCOverlay/EDMCOverlay/EDMCOverlay.csproj.user
 EDMCOverlay.exe*
+.cache/
 .idea/
 Plugins/
 *.pyc

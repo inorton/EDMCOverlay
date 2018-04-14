@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 
+
 namespace EDMCOverlay
 {
     /// <summary>
@@ -18,6 +19,14 @@ namespace EDMCOverlay
         private readonly OverlayRenderer _renderer;
         public const int DefaultTtl = 5;
         public const int MaxClients = 5;
+
+        private int messageCount = 0;
+        private int messageUnknownCount = 0;
+        private int messageErrorCount = 0;
+
+        public int MessageCount { get { return this.messageCount; } }
+        public int MessageUnknownCount { get { return this.messageUnknownCount; } }
+        public int MessageErrorCount { get { return this.messageErrorCount; } }
 
         public Logger Logger = Logger.GetInstance(typeof(OverlayJsonServer));
 
@@ -106,8 +115,10 @@ namespace EDMCOverlay
             }
         }
 
-        public void ProcessCommand(Graphic request)
+        public void ProcessCommand(Graphic request, TcpClient client)
         {
+            Interlocked.Increment(ref this.messageCount);            
+
             if (!String.IsNullOrEmpty(request.Command))
             {
                 Logger.LogMessage("Got command: " + request.Command);
@@ -119,7 +130,8 @@ namespace EDMCOverlay
                 if (request.Command.Equals("noop"))
                 {
                     return;
-                }                
+                }
+                Interlocked.Increment(ref this.messageUnknownCount);
                 Logger.LogMessage("Unknown command: " + request.Command);
             }
         }
@@ -141,27 +153,32 @@ namespace EDMCOverlay
                     {                        
                         if (client.Client.Poll(100 * 1000, SelectMode.SelectRead))
                         {
-                            // the connection should block here if the client is still alive
-                            var line = reader.ReadLine();
-
                             // poll returned true, we either have some data or the connection was closed by the client
-                            if (line == null)
+                            String line;                            
+                            do
                             {
-                                Logger.LogMessage(String.Format("client {0} disconnected..", clientId));
-                                break;  // client disconnected
-                            }
+                                // the connection should block here if the client is still alive
+                                line = reader.ReadLine();
+                                
+                                if (line == null)
+                                {
+                                    // 
+                                    Logger.LogMessage(String.Format("client {0} disconnected..", clientId));
+                                    break;  // client disconnected
+                                }
 
-                            if (!String.IsNullOrWhiteSpace(line))
-                            {                                                            
-                                // try and deserialize the buffer.
-                                Logger.LogMessage("got message..");
-                                Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
+                                if (!String.IsNullOrWhiteSpace(line))
+                                {
+                                    // try and deserialize the buffer.
+                                    Logger.LogMessage("got message..");
+                                    Graphic request = JsonConvert.DeserializeObject<Graphic>(line);
 
-                                ProcessCommand(request);
+                                    ProcessCommand(request, client);
 
-                                SendGraphic(request, clientId);
-                                Logger.LogMessage("sent graphic..");
-                            }
+                                    SendGraphic(request, clientId);
+                                    Logger.LogMessage("sent graphic..");
+                                }
+                            } while (line != null);
                         }
                     }
                 }
@@ -170,6 +187,7 @@ namespace EDMCOverlay
             {
                 // maybe log stuff here..
                 Logger.LogMessage(String.Format("Exception: {0}", err));
+                Interlocked.Increment(ref this.messageErrorCount);
                 return;
             }
             finally

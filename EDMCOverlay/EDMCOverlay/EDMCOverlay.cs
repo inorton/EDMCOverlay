@@ -228,8 +228,25 @@ namespace EDMCOverlay
                 }            
                 server = new OverlayJsonServer(5010, renderer);
                 System.Threading.ThreadPool.QueueUserWorkItem((x) => server.Start());
+                var game = renderer.GetGame();
+                if (game == null)
+                {
+                    // elite isn't running?
+                    // if we are in test mode, just use ourself
+                    if (renderer.TestMode)
+                    {
+                        Logger.LogMessage("No game running, using fake test window");
+                        game = Process.GetCurrentProcess();
+                    }                    
+                }
 
-                EDGlassForm glass = new EDGlassForm(renderer.GetGame());
+                if (game == null)
+                {
+                    Logger.LogMessage("No game running, exiting.");
+                    Environment.Exit(0);
+                }
+
+                EDGlassForm glass = new EDGlassForm(game);
                 renderer.Glass = glass;
                 glass.HalfSize = renderer.HalfSize;
                 renderer.Graphics = server.Graphics;

@@ -41,7 +41,7 @@ namespace EDMCOverlay
             if (process == null)
             {
                 Logger.LogMessage(String.Format("Can't find running {0}", EDProgramName));
-                System.Environment.Exit(0);
+                return null;
             }
             return process;
         }
@@ -339,8 +339,8 @@ namespace EDMCOverlay
         {
             Point p = new Point();
             Size csize = GetClientSize();
-            double x_factor = csize.Width / (double)(VIRTUAL_WIDTH);
-            double y_factor = csize.Height / (double)(VIRTUAL_HEIGHT);
+            double x_factor = csize.Width / (double)(VIRTUAL_WIDTH + 32);
+            double y_factor = csize.Height / (double)(VIRTUAL_HEIGHT + 18);
 
             p.X = (int)Math.Round(x * x_factor);
             p.Y = (int)Math.Round(y * y_factor);
