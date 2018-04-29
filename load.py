@@ -3,7 +3,7 @@ Plugin for EDMCOverlay
 """
 import time
 import os
-from edmcoverlay import ensure_service, Overlay
+from edmcoverlay import ensure_service, Overlay, trace
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -16,12 +16,16 @@ def notify_old_hits():
     If an old copy of HITS is installed, notify the user
     :return:
     """
+    if notify_old_hits.done:
+        return
+    notify_old_hits.done = True
     hits_overlay_dist = os.path.join(PLUGDIR, "HITS", "EDMCOverlay", "EDMCOverlay.exe")
     if os.path.exists(hits_overlay_dist):
         client.send_message("warning",
-                            "An older version of the HITS plugin is installed, please update it",
-                            "orange", 30, 180, ttl=10
+                            trace("An older version of the HITS plugin is installed, please update it"),
+                            "#ffcc00", 30, 30, ttl=10
                             )
+notify_old_hits.done = False
 
 
 def plugin_start():
@@ -30,9 +34,8 @@ def plugin_start():
     :return:
     """
     ensure_service()
-    time.sleep(2)
     try:
-        client.send_message("edmcintro", "EDMC Ready", "yellow", 30, 165, ttl=6)
+        client.send_message("edmcintro", trace("EDMC Ready"), "yellow", 30, 165, ttl=6)
         notify_old_hits()
     except Exception:
         pass

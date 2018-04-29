@@ -17,6 +17,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PROG = "EDMCOverlay.exe"
 
 
+def trace(msg):
+    """
+    Print a trace message
+    :param msg:
+    :return:
+    """
+    print >> sys.stderr, "{}".format(msg)
+    return msg
+
+
 def find_server_program():
     """
     Look for EDMCOverlay.exe
@@ -31,7 +41,7 @@ def find_server_program():
     ]
     for item in locations:
         if os.path.isfile(item):
-            print "found {}...".format(item)
+            print "EDMCOverlay exe found: {}...".format(item)
             return item
     return None
 
@@ -48,25 +58,23 @@ def ensure_service():
         sys.path.append(HERE)
 
     global _service
-    program = find_server_program()
 
-    if program:
-        # if it isnt running, start it
-        try:
-            if _service:
-                if _service.poll() is not None:
-                    _service = None
-            if not _service:
-                print "starting {}".format(program)
-                exedir = os.path.abspath(os.path.dirname(program))
-                _service = subprocess.Popen([program], cwd=exedir)
-
-            time.sleep(2)
+    # if it isnt running, start it
+    try:
+        if _service:
             if _service.poll() is not None:
-                subprocess.check_call([program], cwd=exedir)
-                raise Exception("{} exited".format(program))
-        except Exception as err:
-            print "error in ensure_service: {}".format(err)
+                _service = None
+        if not _service:
+            program = find_server_program()
+            trace("EDMCOverlay is starting {}".format(program))
+            exedir = os.path.abspath(os.path.dirname(program))
+            _service = subprocess.Popen([program], cwd=exedir)
+        time.sleep(2)
+        if _service.poll() is not None:
+            subprocess.check_call([program], cwd=exedir)
+            raise Exception("{} exited".format(program))
+    except Exception as err:
+        trace("error in ensure_service: {}".format(err))
 
 
 class Overlay(object):
