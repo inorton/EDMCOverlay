@@ -35,7 +35,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>1</WarningLevel>
@@ -45,10 +45,10 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>0</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -56,7 +56,7 @@
     <StartupObject>EDMCOverlay.EDMCOverlay</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>authenticode.pfx</AssemblyOriginatorKeyFile>
@@ -68,7 +68,7 @@
     <TargetZone>LocalIntranet</TargetZone>
   </PropertyGroup>
   <PropertyGroup>
-    <GenerateManifests>false</GenerateManifests>
+    <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
@@ -82,6 +82,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <ManifestTimestampUrl>http://timestamp.comodoca.com/authenticode</ManifestTimestampUrl>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="GraphicType.cs" />
@@ -118,12 +121,10 @@
     <None Include="authenticode.pfx" />
     <None Include="authenticode.pvk" />
     <None Include="EUROCAPS.TTF" />
-    <None Include="F:\MovedUserdata\inb\Dropbox\Authenticode\edmcoverlay.pvk">
-      <Link>edmcoverlay.pvk</Link>
-    </None>
     <None Include="overlay-signer.snk" />
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -143,10 +144,23 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\edmc-overlay-logo.bmp">
+      <Link>edmc-overlay-logo.bmp</Link>
+    </Content>
+    <Content Include="..\..\edmcoverlay.py">
+      <Link>edmcoverlay.py</Link>
+    </Content>
+    <Content Include="..\..\load.py">
+      <Link>load.py</Link>
+    </Content>
+    <Content Include="..\..\__init__.py">
+      <Link>__init__.py</Link>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>c:\python27\python $(SolutionDir)\signer.py f:\moveduserdata\inb\dropbox\authenticode\authenticode.pfx $(TargetPath) $(ProjectDir)\obj\$(ConfigurationName)\$(TargetFileName)  --gui</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
