@@ -137,6 +137,35 @@ class Overlay(object):
                "x": x, "y": y,
                "ttl": ttl}
         self.send_raw(msg)
+    
+    def send_shape(self, shapeid, shape, color, fill, x, y, w, h, ttl):
+        """
+        Send a shape
+        :param shapeid:
+        :param shape:
+        :param color:
+        :param fill:
+        :param x:
+        :param y:
+        :param w:
+        :param h:
+        :param ttl:
+        :return:
+        """
+        if not self.connection:
+            ensure_service()
+            self.connect()
+
+        msg = {"id": shapeid,
+               "shape": shape,
+               "color": color,
+               "fill": fill,
+               "x": x, "y": y,
+               "w": w, "h": h,
+               "ttl": ttl
+               }
+        self.send_raw(msg)
+
 
 
 def debugconsole():
