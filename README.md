@@ -13,10 +13,17 @@ a program such as EDMC to display simple messages in the game's DirectX window.
 
 ## Installation
 
-This is released as a standard EDMC Plugin, simple unpack the archive into the EDMC
-plugin folder.  Releases of EDMC Overlay are in part inspired by the Overlay.NET
-library from https://github.com/lolp1/Overlay.NET. Though it no longer contains this
-library.
+This is released as an installable EDMC Plugin, download the msi file from the 
+[Releases page](https://github.com/inorton/EDMCOverlay/releases) and run the 
+installer as the same windows user you use to play Elite:Dangerous
+
+## Trusting EDMC Overlay
+
+The New installer and server program are now signed.  EDMCOverlay has a certificate
+authority (CA) that signs our own authenticode key.
+
+The CA certificate thumbprint is 0c2120b504788afd322dc7c45a8a023ca6850787
+and is located at [https://github.com/inorton/EDMCOverlay/blob/master/edmcoverlay-rootca.cer](https://github.com/inorton/EDMCOverlay/blob/master/edmcoverlay-rootca.cer)
 
 ## MIT License
 
