@@ -28,6 +28,9 @@ def notify_old_hits():
 notify_old_hits.done = False
 
 
+def plugin_start3(plugin_dir):
+    return plugin_start()
+
 def plugin_start():
     """
     Start our plugin, add this dir to the search path so others can use our module
@@ -42,7 +45,7 @@ def plugin_start():
     return "EDMCOverlay"
 
 
-def journal_entry(cmdr, system, station, entry, state):
+def journal_entry(cmdr, is_beta, system, station, entry, state):
     """
     Make sure the service is up and running
     :param cmdr:
