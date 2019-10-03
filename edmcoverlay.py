@@ -2,6 +2,8 @@
 Client library for EDMCOverlay
 """
 
+from __future__ import print_function
+
 import sys
 import socket
 import json
@@ -23,7 +25,7 @@ def trace(msg):
     :param msg:
     :return:
     """
-    print >> sys.stderr, "{}".format(msg)
+    print("EDMCOverlay: {}".format(msg), file=sys.stderr)
     return msg
 
 
@@ -41,7 +43,7 @@ def find_server_program():
     ]
     for item in locations:
         if os.path.isfile(item):
-            print "EDMCOverlay exe found: {}...".format(item)
+            print("EDMCOverlay: exe found: {}...".format(item))
             return item
     return None
 
@@ -106,10 +108,10 @@ class Overlay(object):
 
         try:
             data = json.dumps(msg)
-            self.connection.send(data)
-            self.connection.send("\n")
+            self.connection.send(data.encode())
+            self.connection.send(b"\n")
         except Exception as err:
-            print "error in send_raw: {}".format(err)
+            print("EDMCOverlay: error in send_raw: {}".format(err))
             self.connection = None
             raise
         return None
@@ -137,7 +139,7 @@ class Overlay(object):
                "x": x, "y": y,
                "ttl": ttl}
         self.send_raw(msg)
-    
+
     def send_shape(self, shapeid, shape, color, fill, x, y, w, h, ttl):
         """
         Send a shape
@@ -173,16 +175,16 @@ def debugconsole():
     Print stuff
     """
     import load as loader
-    
-    print >> sys.stderr, "Loading..\n"
+
+    print("EDMCOverlay: Loading..\n", file=sys.stderr)
     loader.plugin_start()
 
     cl = Overlay()
 
-    print >> sys.stderr, "Reading..\n"
+    print("EDMCOverlay: Reading..\n", file=sys.stderr)
     while True:
         line = sys.stdin.readline().strip()
-        print >> sys.stderr, "sending... {}".format(line)
+        print("EDMCOverlay: sending... {}".format(line), file=sys.stderr)
         cl.send_message("msg", line, "red", 100, 100)
 
 
