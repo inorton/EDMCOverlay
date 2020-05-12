@@ -71,7 +71,8 @@ namespace EDMCOverlay
             this.TransparencyKey = Color.Black;
 
             int initialStyle = GetWindowLong(this.Handle, -20);
-            //SetWindowLong(this.Handle, -20, initialStyle | 0x80000 | 0x20);
+            // makes window click-trough
+            SetWindowLong(this.Handle, -20, initialStyle | 0x80000 | 0x20);
             this.Follow = follow;
 
             // Disable Aero transitions, the plexiglass gets too visible
