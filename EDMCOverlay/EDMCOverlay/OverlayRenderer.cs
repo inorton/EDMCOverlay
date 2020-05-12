@@ -174,7 +174,6 @@ namespace EDMCOverlay
                 return;
             }
 
-            // this causes flickering
             draw.Clear(Color.Black);
         }
 
@@ -186,7 +185,8 @@ namespace EDMCOverlay
                 return;
             }
 
-            Glass.TopMost = true;
+            // this causes flickering
+            //Glass.TopMost = true;
             Clear(draw);
             foreach (var id in Graphics.Keys.ToArray())
             {
