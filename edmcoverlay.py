@@ -18,6 +18,11 @@ SERVER_PORT = 5010
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROG = "EDMCOverlay.exe"
 
+try:
+    import monitor
+except ImportError:
+    monitor = None
+
 
 def trace(msg):
     """
@@ -29,11 +34,17 @@ def trace(msg):
     return msg
 
 
+_prog = None
+
+
 def find_server_program():
     """
     Look for EDMCOverlay.exe
     :return:
     """
+    global _prog
+    if _prog is not None:
+        return _prog
 
     locations = [
         os.path.join(HERE, PROG),
@@ -43,7 +54,8 @@ def find_server_program():
     ]
     for item in locations:
         if os.path.isfile(item):
-            print("EDMCOverlay: exe found: {}...".format(item))
+            trace("EDMCOverlay: exe found at {}...".format(item))
+            _prog = item
             return item
     return None
 
@@ -52,27 +64,10 @@ _service = None
 
 
 def check_game_running():
-    if platform == 'win32':
+    if not monitor:
+        return True
 
-        def WindowTitle(h):
-            if h:
-                l = GetWindowTextLength(h) + 1
-                buf = ctypes.create_unicode_buffer(l)
-                if GetWindowText(h, buf, l):
-                    return buf.value
-            return None
-
-        def callback(hWnd, lParam):
-            name = WindowTitle(hWnd)
-            if name and name.startswith('Elite - Dangerous'):
-                handle = GetProcessHandleFromHwnd(hWnd)
-                if handle:	# If GetProcessHandleFromHwnd succeeds then the app is already running as this user
-                    CloseHandle(handle)
-                    return False	# stop enumeration
-            return True
-
-        return not EnumWindows(EnumWindowsProc(callback), 0)
-    return True
+    return monitor.monitor.game_running()
 
 
 def ensure_service():
@@ -83,26 +78,38 @@ def ensure_service():
     if HERE not in sys.path:
         sys.path.append(HERE)
 
-    global _service
+    if not check_game_running():
+        return
 
-    # if it isnt running, start it
+    global _service
+    program = find_server_program()
+    exedir = os.path.abspath(os.path.dirname(program))
+
+    # see if it is alive
     try:
-        if _service:
+        internal.connect()
+        internal.send_message(0, ".", "black", 0, 0, 1)
+        return
+    except Exception:
+        trace("Overlay server is not running..")
+        # if it isnt running, start it
+        try:
+            if _service:
+                if _service.poll() is not None:
+                    _service = None
+
+            if not _service:
+                if check_game_running():
+                    trace("EDMCOverlay is starting {}".format(program))
+                _service = subprocess.Popen([program], cwd=exedir)
+            time.sleep(2)
             if _service.poll() is not None:
-                _service = None
-        if not _service:
-            program = find_server_program()
-            trace("EDMCOverlay is starting {}".format(program))
-            exedir = os.path.abspath(os.path.dirname(program))
-            _service = subprocess.Popen([program], cwd=exedir)
-        time.sleep(2)
-        if _service.poll() is not None:
-            subprocess.check_call([program], cwd=exedir)
-            raise Exception("{} exited".format(program))
-    except Exception as err:
-		if check_game_running():
-            trace("error in ensure_service: {}".format(err))
-		
+                subprocess.check_call([program], cwd=exedir)
+                raise Exception("{} exited".format(program))
+        except Exception as err:
+            if check_game_running():
+                trace("error in ensure_service: {}".format(err))
+
 
 class Overlay(object):
     """
@@ -198,7 +205,6 @@ class Overlay(object):
         self.send_raw(msg)
 
 
-
 def debugconsole():
     """
     Print stuff
@@ -216,3 +222,5 @@ def debugconsole():
 
 if __name__ == "__main__":
     debugconsole()
+
+internal = Overlay()
