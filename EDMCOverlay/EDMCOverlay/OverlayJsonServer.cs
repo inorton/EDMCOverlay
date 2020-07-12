@@ -59,7 +59,7 @@ namespace EDMCOverlay
                 Logger.LogMessage("JSON server thread startup");
                 var banner = new Graphic
                 {
-                    TTL = 5,
+                    TTL = 15,
                     Id = "_",
                     Color = "yellow",
                     Size = GraphicType.FONT_LARGE,

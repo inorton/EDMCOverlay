@@ -56,21 +56,17 @@ namespace EDMCOverlay
             {
                 this.StartUpdate();
             });
+
         }
 
-        [DllImport("user32.dll")]
-        static extern IntPtr GetForegroundWindow();
-
-        [DllImport("user32.dll")]
-        static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
 
         private static string GetActiveWindowTitle()
         {
             const int nChars = 256;
             StringBuilder Buff = new StringBuilder(nChars);
-            IntPtr handle = GetForegroundWindow();
+            IntPtr handle = WindowUtils.GetForegroundWindow();
 
-            if (GetWindowText(handle, Buff, nChars) > 0)
+            if (WindowUtils.GetWindowText(handle, Buff, nChars) > 0)
             {
                 return Buff.ToString();
             }
@@ -186,7 +182,6 @@ namespace EDMCOverlay
             }
 
             // this causes flickering
-            //Glass.TopMost = true;
             Clear(draw);
             foreach (var id in Graphics.Keys.ToArray())
             {
@@ -305,12 +300,16 @@ namespace EDMCOverlay
                         Thread.Sleep(500);
                         continue;
                     }
-                    IntPtr activeWindow = GetForegroundWindow();
+                    IntPtr activeWindow = WindowUtils.GetForegroundWindow();
 
                     bool foreground = (activeWindow == Glass.Follow.MainWindowHandle);
 
-                    if (!foreground)
-                        Debug.WriteLine("window obscured");
+                    if (foreground)
+                    {
+                        Debug.WriteLine(DateTime.Now + " window foreground");
+                    } else { 
+                        Debug.WriteLine(DateTime.Now + " window obscured");
+                    }
 
                     bool render = (foreground && (Graphics.Values.Count > 0)) || this.ForceRender;
 

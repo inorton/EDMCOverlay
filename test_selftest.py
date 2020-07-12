@@ -15,17 +15,17 @@ def test_raw_messages():
 
     overlay = edmcoverlay.Overlay()
     overlay.connect()
-    for i in range(1, 200):
+    for i in range(1, 100):
+        print("test {}".format(i))
+        time.sleep(0.1)
         overlay.send_raw({
             "id": "foo{}".format(i),
-            "x": random.randint(10, 1024),
-            "y": (6 * i) % 960,
-            "color": "#ff0000",
+            "x": random.randint(10, 1140),
+            "y": (8 * i) % 960,
+            "color": "#ff{:02x}00".format(random.randint(32, 240)),
             "text": "msg{}".format(i),
             "ttl": 60,
         })
-
-    time.sleep(2)
     for i in range(1, 200):
         overlay.send_raw({
             "id": "foo{}".format(i),
