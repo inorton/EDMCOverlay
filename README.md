@@ -1,4 +1,4 @@
-# EDMC Overlay (c) 2017 Ian Norton
+# EDMC Overlay (c) 2020 Ian Norton
 ## About
 
 EDMC Overlay is a helper program for Elite:Dangerous, It provides a means for 
