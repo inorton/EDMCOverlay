@@ -51,6 +51,30 @@ def find_server_program():
 _service = None
 
 
+def check_game_running():
+    if platform == 'win32':
+
+        def WindowTitle(h):
+            if h:
+                l = GetWindowTextLength(h) + 1
+                buf = ctypes.create_unicode_buffer(l)
+                if GetWindowText(h, buf, l):
+                    return buf.value
+            return None
+
+        def callback(hWnd, lParam):
+            name = WindowTitle(hWnd)
+            if name and name.startswith('Elite - Dangerous'):
+                handle = GetProcessHandleFromHwnd(hWnd)
+                if handle:	# If GetProcessHandleFromHwnd succeeds then the app is already running as this user
+                    CloseHandle(handle)
+                    return False	# stop enumeration
+            return True
+
+        return not EnumWindows(EnumWindowsProc(callback), 0)
+    return True
+
+
 def ensure_service():
     """
     Start the overlay service program
@@ -76,8 +100,9 @@ def ensure_service():
             subprocess.check_call([program], cwd=exedir)
             raise Exception("{} exited".format(program))
     except Exception as err:
-        trace("error in ensure_service: {}".format(err))
-
+		if check_game_running():
+			trace("error in ensure_service: {}".format(err))
+		
 
 class Overlay(object):
     """
@@ -108,11 +133,15 @@ class Overlay(object):
 
         try:
             data = json.dumps(msg)
-            self.connection.send(data.encode())
-            self.connection.send(b"\n")
+            if sys.version_info.major == 3:
+                self.connection.send(data.encode("utf-8"))
+                self.connection.send(b"\n")
+            else:
+                self.connection.send(data)
+                self.connection.send("\n")
         except Exception as err:
-            print("EDMCOverlay: error in send_raw: {}".format(err))
             self.connection = None
+            print(u"send_raw failed with {}".format(err))
             raise
         return None
 
@@ -176,15 +205,12 @@ def debugconsole():
     """
     import load as loader
 
-    print("EDMCOverlay: Loading..\n", file=sys.stderr)
     loader.plugin_start()
 
     cl = Overlay()
 
-    print("EDMCOverlay: Reading..\n", file=sys.stderr)
     while True:
         line = sys.stdin.readline().strip()
-        print("EDMCOverlay: sending... {}".format(line), file=sys.stderr)
         cl.send_message("msg", line, "red", 100, 100)
 
 
