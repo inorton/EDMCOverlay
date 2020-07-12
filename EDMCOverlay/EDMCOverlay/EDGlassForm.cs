@@ -15,29 +15,8 @@ namespace EDMCOverlay
     public class EDGlassForm : Form
     {
         public System.Diagnostics.Process Follow;
-
-        private const int DWMWA_TRANSITIONS_FORCEDISABLED = 3;
-        [DllImport("dwmapi.dll")]
-        private static extern int DwmSetWindowAttribute(IntPtr hWnd, int attr, ref int value, int attrLen);
-
-        [DllImport("user32.dll")]
-        static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }       
+        
+     
 
         public bool HalfSize { get; set; }
 
@@ -70,9 +49,10 @@ namespace EDMCOverlay
             this.TopMost = true;
             this.TransparencyKey = Color.Black;
 
-            int initialStyle = GetWindowLong(this.Handle, -20);
+            int initialStyle = WindowUtils.GetWindowLong(this.Handle, WindowUtils.GWL_EXSTYLE);
             // makes window click-trough
-            SetWindowLong(this.Handle, -20, initialStyle | 0x80000 | 0x20);
+            WindowUtils.SetWindowLong(this.Handle, WindowUtils.GWL_EXSTYLE, 
+                initialStyle | WindowUtils.WS_EX_LAYERED | WindowUtils.WS_EX_TRANSPARENT | WindowUtils.WS_EX_NOACTIVATE );
             this.Follow = follow;
 
             // Disable Aero transitions, the plexiglass gets too visible
@@ -80,7 +60,7 @@ namespace EDMCOverlay
             {
                 int value = 1;
                 if (follow != null)
-                    DwmSetWindowAttribute(follow.MainWindowHandle, DWMWA_TRANSITIONS_FORCEDISABLED, ref value, 4);
+                    WindowUtils.DwmSetWindowAttribute(follow.MainWindowHandle, WindowUtils.DWMWA_TRANSITIONS_FORCEDISABLED, ref value, 4);
             }
         }
 
@@ -88,7 +68,7 @@ namespace EDMCOverlay
         {
             base.OnLoad(e);
 
-            FollowWindow();
+            FollowWindow();            
             
             this.SetStyle(
                 ControlStyles.OptimizedDoubleBuffer |
@@ -119,7 +99,7 @@ namespace EDMCOverlay
                 Size siz = new Size(640, 400);
 
                 if (Process.GetCurrentProcess().Id != Follow.Id
-                    && GetWindowRect(Follow.MainWindowHandle, ref window))
+                    && WindowUtils.GetWindowRect(Follow.MainWindowHandle, ref window))
                 {
                     pos = new Point(window.Left + this.XOffset, window.Top + this.YOffset);
                     siz = new Size(
