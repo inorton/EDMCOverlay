@@ -17,16 +17,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PROG = "EDMCOverlay.exe"
 
 
-def trace(msg):
-    """
-    Print a trace message
-    :param msg:
-    :return:
-    """
-    print >> sys.stderr, "{}".format(msg)
-    return msg
-
-
 def find_server_program():
     """
     Look for EDMCOverlay.exe
@@ -41,10 +31,8 @@ def find_server_program():
     ]
     for item in locations:
         if os.path.isfile(item):
-            print "EDMCOverlay exe found: {}...".format(item)
             return item
     return None
-
 
 _service = None
 
@@ -58,23 +46,25 @@ def ensure_service():
         sys.path.append(HERE)
 
     global _service
+    program = find_server_program()
 
-    # if it isnt running, start it
-    try:
-        if _service:
+    if program:
+        # if it isnt running, start it
+        try:
+            if _service:
+                if _service.poll() is not None:
+                    _service = None
+            if not _service:
+                exedir = os.path.abspath(os.path.dirname(program))
+                _service = subprocess.Popen([program], cwd=exedir)
+
+            time.sleep(2)
             if _service.poll() is not None:
-                _service = None
-        if not _service:
-            program = find_server_program()
-            trace("EDMCOverlay is starting {}".format(program))
-            exedir = os.path.abspath(os.path.dirname(program))
-            _service = subprocess.Popen([program], cwd=exedir)
-        time.sleep(2)
-        if _service.poll() is not None:
-            subprocess.check_call([program], cwd=exedir)
-            raise Exception("{} exited".format(program))
-    except Exception as err:
-        trace("error in ensure_service: {}".format(err))
+                subprocess.check_call([program], cwd=exedir)
+                raise Exception("{} exited".format(program))
+        except Exception as err:
+            print(u"ensure_service failed with {}".format(err))
+            pass
 
 
 class Overlay(object):
@@ -95,7 +85,7 @@ class Overlay(object):
         connection = socket.socket()
         connection.connect((self.server, self.port))
         self.connection = connection
-
+    
     def send_raw(self, msg):
         """
         Encode a dict and send it to the server
@@ -106,38 +96,18 @@ class Overlay(object):
 
         try:
             data = json.dumps(msg)
-            self.connection.send(data)
-            self.connection.send("\n")
+            if sys.version_info.major == 3:
+                self.connection.send(data.encode("utf-8"))
+                self.connection.send(b"\n")
+            else:
+                self.connection.send(data)
+                self.connection.send("\n")
         except Exception as err:
-            print "error in send_raw: {}".format(err)
             self.connection = None
+            print(u"send_raw failed with {}".format(err))
             raise
         return None
 
-    def send_message(self, msgid, text, color, x, y, ttl=4, size="normal"):
-        """
-        Send a message
-        :param msgid:
-        :param text:
-        :param color:
-        :param x:
-        :param y:
-        :param ttl:
-        :param size:
-        :return:
-        """
-        if not self.connection:
-            ensure_service()
-            self.connect()
-
-        msg = {"id": msgid,
-               "color": color,
-               "text": text,
-               "size": size,
-               "x": x, "y": y,
-               "ttl": ttl}
-        self.send_raw(msg)
-    
     def send_shape(self, shapeid, shape, color, fill, x, y, w, h, ttl):
         """
         Send a shape
@@ -166,6 +136,29 @@ class Overlay(object):
                }
         self.send_raw(msg)
 
+    def send_message(self, msgid, text, color, x, y, ttl=4, size="normal"):
+        """
+        Send a message
+        :param msgid:
+        :param text:
+        :param color:
+        :param x:
+        :param y:
+        :param ttl:
+        :param size:
+        :return:
+        """
+        if not self.connection:
+            ensure_service()
+            self.connect()
+
+        msg = {"id": msgid,
+               "color": color,
+               "text": text,
+               "size": size,
+               "x": x, "y": y,
+               "ttl": ttl}
+        self.send_raw(msg)
 
 
 def debugconsole():
@@ -174,15 +167,12 @@ def debugconsole():
     """
     import load as loader
     
-    print >> sys.stderr, "Loading..\n"
     loader.plugin_start()
 
     cl = Overlay()
 
-    print >> sys.stderr, "Reading..\n"
     while True:
         line = sys.stdin.readline().strip()
-        print >> sys.stderr, "sending... {}".format(line)
         cl.send_message("msg", line, "red", 100, 100)
 
 
