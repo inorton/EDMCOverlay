@@ -101,7 +101,7 @@ def ensure_service():
             raise Exception("{} exited".format(program))
     except Exception as err:
 		if check_game_running():
-			trace("error in ensure_service: {}".format(err))
+            trace("error in ensure_service: {}".format(err))
 		
 
 class Overlay(object):
