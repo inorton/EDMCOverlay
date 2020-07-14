@@ -136,6 +136,9 @@ class Overlay(object):
         :param msg:
         :return:
         """
+        if not self.connnection:
+            return None
+
         assert isinstance(msg, dict)
 
         try:
