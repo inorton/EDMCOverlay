@@ -98,6 +98,8 @@ namespace EDMCOverlay
                 Point pos = new Point(300, 300);
                 Size siz = new Size(640, 400);
 
+                this.TopMost = true;
+
                 if (Process.GetCurrentProcess().Id != Follow.Id
                     && WindowUtils.GetWindowRect(Follow.MainWindowHandle, ref window))
                 {
