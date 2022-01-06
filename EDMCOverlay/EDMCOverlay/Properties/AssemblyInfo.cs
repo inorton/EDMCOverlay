@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Ian Norton")]
 [assembly: AssemblyProduct("EDMCOverlay")]
-[assembly: AssemblyCopyright("2018")]
+[assembly: AssemblyCopyright("2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
