@@ -1,4 +1,4 @@
-# EDMC Overlay (c) 2017 Ian Norton
+# EDMC Overlay (c) 2020 Ian Norton
 ## About
 
 EDMC Overlay is a helper program for Elite:Dangerous, It provides a means for 
@@ -65,7 +65,7 @@ Supported colors values are:
 Supported size values are: 
  "normal" and "large"
 
-Additionally, you may draw rectanles by setting the "shap" to "rect" and setting the "color" and/or "fill" values.
+Additionally, you may draw rectangles by setting the "shape" to "rect" and setting the "color" and/or "fill" values.
 
 ```
 {"id": "fred", "shape": "rect", "x": 100, "y": 10, "w": 30:, "h": 5, "fill": "red", "color", "#ccff00"}

@@ -27,20 +27,20 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_B7BD2F9C6D04EBF17C8E6E387DB7202D"
+        "MsmKey" = "8:_FA3A32BF12EDED1EBB2265CBB27D2ACD"
         "OwnerKey" = "8:_3FBC8BAA71B74F85A4E99E577F448826"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_B7BD2F9C6D04EBF17C8E6E387DB7202D"
+        "OwnerKey" = "8:_3FBC8BAA71B74F85A4E99E577F448826"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_3FBC8BAA71B74F85A4E99E577F448826"
+        "OwnerKey" = "8:_FA3A32BF12EDED1EBB2265CBB27D2ACD"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -158,13 +158,18 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_B7BD2F9C6D04EBF17C8E6E387DB7202D"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_FA3A32BF12EDED1EBB2265CBB27D2ACD"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_FA3A32BF12EDED1EBB2265CBB27D2ACD"
+                    {
+                    "Name" = "8:Newtonsoft.Json.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Newtonsoft.Json.dll"
             "TargetName" = "8:"
@@ -251,15 +256,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:EDMC Overlay"
-        "ProductCode" = "8:{9ED00103-1D35-447F-9862-C06D8295CAA9}"
-        "PackageCode" = "8:{A3B2EA4A-BE49-47AC-A17F-AEC793CB3CBE}"
+        "ProductCode" = "8:{4849FA67-3646-449B-8898-9E7DB4696FC1}"
+        "PackageCode" = "8:{F35DB5E9-DA5D-4EB9-8513-4E80E0921BCE}"
         "UpgradeCode" = "8:{5130A4E3-3C60-4F9B-B3A7-5602D91B03AF}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:1.0.6"
         "Manufacturer" = "8:EDMC Overlay"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://github.com/inorton/EDMCOverlay"
@@ -275,7 +280,7 @@
         "UseSystemSearchPath" = "11:TRUE"
         "TargetPlatform" = "3:0"
         "PreBuildEvent" = "8:"
-        "PostBuildEvent" = "8:c:\\Python27\\python.exe $(ProjectDir)\\..\\signer.py f:\\MovedUserdata\\inb\\Dropbox\\Authenticode\\authenticode.pfx $(BuiltOuputPath) $(ProjectDir)\\$(Configuration)\\EDMCOverlay-1.0.0.msi --gui"
+        "PostBuildEvent" = "8:c:\\Python27\\python.exe $(ProjectDir)\\..\\signer.py f:\\MovedUserdata\\inb\\Dropbox\\Authenticode\\authenticode.pfx $(BuiltOuputPath) $(ProjectDir)\\$(Configuration)\\EDMCOverlay-1.0.6.msi --gui"
         "RunPostBuildEvent" = "3:0"
         }
         "Registry"
