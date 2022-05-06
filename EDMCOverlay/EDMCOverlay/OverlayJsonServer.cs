@@ -59,7 +59,7 @@ namespace EDMCOverlay
                 Logger.LogMessage("JSON server thread startup");
                 var banner = new Graphic
                 {
-                    TTL = 5,
+                    TTL = 15,
                     Id = "_",
                     Color = "yellow",
                     Size = GraphicType.FONT_LARGE,
@@ -147,9 +147,10 @@ namespace EDMCOverlay
             try
             {
                 using (TcpClient client = (TcpClient) obj)
-                {
-                    StreamReader reader = new StreamReader(client.GetStream(), Encoding.UTF8);                    
-                    while (client.Connected)
+                {                    
+                    StreamReader reader = new StreamReader(client.GetStream(), Encoding.UTF8);
+                    bool lostConnection = false;           
+                    while (client.Connected && !lostConnection)
                     {                        
                         if (client.Client.Poll(100 * 1000, SelectMode.SelectRead))
                         {
@@ -164,6 +165,7 @@ namespace EDMCOverlay
                                 {
                                     // 
                                     Logger.LogMessage(String.Format("client {0} disconnected..", clientId));
+                                    lostConnection = true;                           
                                     break;  // client disconnected
                                 }
 
