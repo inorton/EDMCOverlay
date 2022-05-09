@@ -165,27 +165,27 @@ namespace EDMCOverlay
             return null;
         }
 
-        private void Clear(Graphics draw)
+        private void Clear()
         {
             if (Glass.InvokeRequired)
             {
-                Glass.Invoke(new Action(() => { Clear(draw); }));
+                Glass.Invoke(new Action(() => { Clear(); }));
                 return;
             }
-
+            var draw = getDraw();
             draw.Clear(Color.Black);
         }
 
-        private void Draw(Graphics draw)
+        private void Draw()
         {
             if (Glass.InvokeRequired)
             {
-                Glass.Invoke(new Action(() => { Draw(draw); }));
+                Glass.Invoke(new Action(() => { Draw(); }));
                 return;
             }
 
             // this causes flickering
-            Clear(draw);
+            Clear();
             foreach (var id in Graphics.Keys.ToArray())
             {
                 var gfx = Graphics[id];                
@@ -199,20 +199,15 @@ namespace EDMCOverlay
 
                 if (!String.IsNullOrEmpty(g.Shape))
                 {
-                    DrawShape(draw, g);
+                    DrawShape(g);
                 }
                 else
                 {
                     if (!String.IsNullOrEmpty(g.Text))
                     {
-                        DrawText(draw, g);
+                        DrawText(g);
                     }
                 }
-            }
-
-            if (this.Standalone && this.Glass.Focused)
-            {
-                DrawControls();
             }
         }
         
@@ -225,22 +220,25 @@ namespace EDMCOverlay
         {
             if (this.Glass == null) return;
             
-            /* if (Glass.InvokeRequired)
+            if (Glass.InvokeRequired)
             {
                 Glass.Invoke(new Action(() => { allocateBuffers(bufctx); }));
+                return;
             }
-
+            
             if (this.back != null)
             {
                 var bufRect = this.back.Graphics.VisibleClipBounds;
+
                 if (bufRect.Width >= this.Glass.DisplayRectangle.Width && bufRect.Height >= this.Glass.DisplayRectangle.Height) return;
-            }*/
+            }
 
             lock (this) {
                 if (back != null)
-                {                    
+                {
                     back.Dispose();
                 }
+
                 if (canvas == null)
                 {
                     canvas = this.Glass.CreateGraphics();
@@ -278,82 +276,93 @@ namespace EDMCOverlay
             var bufg = BufferedGraphicsManager.Current;            
             DateTime lastframe = DateTime.Now;
             Graphics draw = null;
-            Logger.LogMessage("Starting update loop");
-
+            
             double fixedwait = (1000 / FPS); // number of msec to wait assuming zero time to draw frame
 
-            while (this.run)
-            {
-                if (back == null) allocateBuffers(bufg);
-                TimeSpan elapsed = DateTime.Now.Subtract(lastframe);
-
-                double wait = fixedwait - elapsed.TotalMilliseconds;                
-                if (wait > 0)
-                    System.Threading.Thread.Sleep((int)fixedwait);
-                
-                if (Glass == null)
-                    System.Threading.Thread.Sleep(1000);
-
-                if (Glass != null)
+            try {
+                while (this.run)
                 {
-                    Glass.XOffset = VIRTUAL_ORIGIN_X;
-                    Glass.YOffset = VIRTUAL_ORIGIN_Y;
+                    //if (back == null)
+                    allocateBuffers(bufg);
+                    TimeSpan elapsed = DateTime.Now.Subtract(lastframe);
 
-                    if (this.ForceLocation.HasValue && this.ForceSize.HasValue)
+                    double wait = fixedwait - elapsed.TotalMilliseconds;
+                    if (wait > 0)
+                        System.Threading.Thread.Sleep((int)fixedwait);
+
+                    if (Glass == null)
+                        System.Threading.Thread.Sleep(1000);
+
+                    if (Glass != null)
                     {
-                        Glass.ForceGeometry(this.ForceLocation.Value, this.ForceSize.Value);
-                    }
+                        Glass.XOffset = VIRTUAL_ORIGIN_X;
+                        Glass.YOffset = VIRTUAL_ORIGIN_Y;
 
-                    if (Glass.Follow != null && Glass.Follow.HasExited)
-                    {
-                        Logger.LogMessage(String.Format("{0} has exited. quitting.", Glass.Follow.ProcessName));
-                        System.Environment.Exit(0);
-                    }
-                    
-                    if (draw == null)
-                    {
-                        draw = getDraw();
-                    }
-
-                    if (Graphics == null || draw == null)
-                    {
-                        Thread.Sleep(500);
-                        continue;
-                    }
-                    IntPtr activeWindow = WindowUtils.GetForegroundWindow();
-
-                    bool foreground = (activeWindow == Glass.Follow.MainWindowHandle);
-
-                    if (foreground)
-                    {
-                        Debug.WriteLine(DateTime.Now + " window foreground");
-                    } else { 
-                        Debug.WriteLine(DateTime.Now + " window obscured");
-                    }
-
-                    bool render = ((this.Standalone || foreground) && (Graphics.Values.Count > 0)) || this.ForceRender;
-
-                    if (render)
-                    {
-                        lock (Graphics)
+                        if (this.ForceLocation.HasValue && this.ForceSize.HasValue)
                         {
-                            Draw(draw);
-                            DrawControls();
-                            swapBuffers(bufg);
-                            if (!this.Standalone)
+                            Glass.ForceGeometry(this.ForceLocation.Value, this.ForceSize.Value);
+                        }
+
+                        if (Glass.Follow != null && Glass.Follow.HasExited)
+                        {
+                            Logger.LogMessage(String.Format("{0} has exited. quitting.", Glass.Follow.ProcessName));
+                            System.Environment.Exit(0);
+                        }
+
+                        if (draw == null)
+                        {
+                            draw = getDraw();
+                        }
+
+                        if (Graphics == null || draw == null || back == null)
+                        {
+                            Thread.Sleep(500);
+                            continue;
+                        }
+
+                        IntPtr activeWindow = WindowUtils.GetForegroundWindow();
+
+                        bool foreground = (activeWindow == Glass.Follow.MainWindowHandle);
+
+                        if (foreground)
+                        {
+                            Debug.WriteLine(DateTime.Now + " window foreground");
+                        }
+                        else
+                        {
+                            Debug.WriteLine(DateTime.Now + " window obscured");
+                        }
+
+                        bool render = ((this.Standalone || foreground) && (Graphics.Values.Count > 0)) || this.ForceRender;
+
+                        if (render)
+                        {
+                            lock (Graphics)
                             {
-                                Glass.FollowWindow();
+                                Draw();
+                                DrawControls();
+                                swapBuffers(bufg);
+                                if (!this.Standalone)
+                                {
+                                    Glass.FollowWindow();
+                                }
                             }
                         }
-                    } else {
-                        // nothing to draw, clear and sleep a long sleep                        
-                        Clear(draw);
-                        DrawControls();
-                        swapBuffers(bufg);
-                        Thread.Sleep(1000);
+                        else
+                        {
+                            // nothing to draw, clear and sleep a long sleep                        
+                            Clear();
+                            DrawControls();
+                            swapBuffers(bufg);
+                            Thread.Sleep(1000);
+                        }
+                        lastframe = DateTime.Now;
                     }
-                    lastframe = DateTime.Now;
                 }
+            }
+            catch (Exception ignore) 
+            {
+                Logger.LogMessage($"Exception in StartUpdate: {ignore}");
             }
         }
 
@@ -387,13 +396,14 @@ namespace EDMCOverlay
             return scaled;
         }
 
-        private void DrawMarker(Graphics draw, VectorPoint marker)
+        private void DrawMarker(VectorPoint marker)
         {
             if (String.IsNullOrWhiteSpace(marker.Color)) return;
             Brush brush = GetBrush(marker.Color);
             if (brush == null) return;
 
             Pen p = new Pen(brush);
+            var draw = getDraw();
             if ( marker.Marker.Equals("cross"))
             {
                 // draw 2 lines
@@ -408,14 +418,15 @@ namespace EDMCOverlay
             }
         }
 
-        private void DrawVectorLine(Graphics draw, Brush brush, VectorPoint start, VectorPoint end)
+        private void DrawVectorLine(Brush brush, VectorPoint start, VectorPoint end)
         {
             if (brush == null) return;
             Pen p = new Pen(brush);
+            var draw = getDraw();
             draw.DrawLine(p, ScalePosition(start.X, start.Y), Scale(end.X, end.Y));
         }
 
-        private void DrawVector(Graphics draw, Graphic start, bool erase)
+        private void DrawVector(Graphic start, bool erase)
         {
             // draw first point
             if (start.Vector == null) return;
@@ -426,23 +437,23 @@ namespace EDMCOverlay
             for (int i = 1; i < start.Vector.Length; i++)
             {
                 var current = start.Vector[i];
-                DrawVectorLine(draw, GetBrush(start.Color), last, current);
-                DrawMarker(draw, last);
-                DrawTextEx(draw, GraphicType.FONT_NORMAL, last.Color, last.Text, last.X + 2, last.Y + 7);
+                DrawVectorLine(GetBrush(start.Color), last, current);
+                DrawMarker(last);
+                DrawTextEx(GraphicType.FONT_NORMAL, last.Color, last.Text, last.X + 2, last.Y + 7);
                 last = current;
             }
 
             // draw last marker
-            DrawMarker(draw, last);
-            DrawTextEx(draw, GraphicType.FONT_NORMAL, last.Color, last.Text, last.X + 2, last.Y + 7);
+            DrawMarker(last);
+            DrawTextEx(GraphicType.FONT_NORMAL, last.Color, last.Text, last.X + 2, last.Y + 7);
         }        
 
-        private void DrawVector(Graphics draw, Graphic start)
+        private void DrawVector(Graphic start)
         {
-            DrawVector(draw, start, false);
+            DrawVector(start, false);
         }
         
-        private void DrawShape(Graphics draw, Graphic g)
+        private void DrawShape(Graphic g)
         {
             if (g.Shape.Equals(GraphicType.SHAPE_RECT))
             {
@@ -451,6 +462,7 @@ namespace EDMCOverlay
                     new Size(Scale(g.W, g.H)));
 
                 Brush fill = GetBrush(g.Fill);
+                var draw = getDraw();
                 if (fill != null)
                 {                    
                     draw.FillRectangle(fill, shapeRect);
@@ -465,18 +477,18 @@ namespace EDMCOverlay
                 if (g.Shape.Equals(GraphicType.SHAPE_VECT))
                 {
                     // a vector line
-                    DrawVector(draw, g);
+                    DrawVector(g);
                 }
             }
         }
 
-        private void DrawText(Graphics draw, Graphic g)
+        private void DrawText(Graphic g)
         {
             
-            DrawTextEx(draw, g.Size, g.Color, g.Text, g.X, g.Y);
+            DrawTextEx(g.Size, g.Color, g.Text, g.X, g.Y);
         }
         
-        private void DrawTextEx(Graphics draw, String fontsize, String fontcolor, String text, int x, int y)
+        private void DrawTextEx(String fontsize, String fontcolor, String text, int x, int y)
         {
             if (String.IsNullOrWhiteSpace(text)) return;
             int textwidth = 8 * text.Length;
@@ -498,6 +510,7 @@ namespace EDMCOverlay
             
             if (paint != null)
             {
+                var draw = getDraw();
                 draw.DrawString(text, size, paint, (float)loc.X, (float)loc.Y);
             }
         }
