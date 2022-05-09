@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Drawing.Text;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace EDMCOverlay
 {
@@ -35,6 +36,8 @@ namespace EDMCOverlay
 
         public Nullable<Point> ForceLocation { get; set; }
         public Nullable<Size> ForceSize { get; set; }
+
+        public Boolean Standalone { get; set; }
 
         private bool run = true;
 
@@ -206,15 +209,32 @@ namespace EDMCOverlay
                     }
                 }
             }
-            
+
+            if (this.Standalone && this.Glass.Focused)
+            {
+                DrawControls();
+            }
         }
         
         BufferedGraphics back = null;
         Graphics canvas = null;
 
+        // Buffer ends up smaller than the window if resized
+        // https://docs.microsoft.com/en-us/dotnet/api/system.drawing.bufferedgraphics?view=dotnet-plat-ext-6.0
         void allocateBuffers(BufferedGraphicsContext bufctx)
         {
             if (this.Glass == null) return;
+            
+            /* if (Glass.InvokeRequired)
+            {
+                Glass.Invoke(new Action(() => { allocateBuffers(bufctx); }));
+            }
+
+            if (this.back != null)
+            {
+                var bufRect = this.back.Graphics.VisibleClipBounds;
+                if (bufRect.Width >= this.Glass.DisplayRectangle.Width && bufRect.Height >= this.Glass.DisplayRectangle.Height) return;
+            }*/
 
             lock (this) {
                 if (back != null)
@@ -311,21 +331,26 @@ namespace EDMCOverlay
                         Debug.WriteLine(DateTime.Now + " window obscured");
                     }
 
-                    bool render = (foreground && (Graphics.Values.Count > 0)) || this.ForceRender;
+                    bool render = ((this.Standalone || foreground) && (Graphics.Values.Count > 0)) || this.ForceRender;
 
                     if (render)
                     {
                         lock (Graphics)
                         {
                             Draw(draw);
+                            DrawControls();
                             swapBuffers(bufg);
-                            Glass.FollowWindow();
+                            if (!this.Standalone)
+                            {
+                                Glass.FollowWindow();
+                            }
                         }
                     } else {
                         // nothing to draw, clear and sleep a long sleep                        
                         Clear(draw);
+                        DrawControls();
                         swapBuffers(bufg);
-                        Thread.Sleep(1000);                    
+                        Thread.Sleep(1000);
                     }
                     lastframe = DateTime.Now;
                 }
@@ -475,6 +500,35 @@ namespace EDMCOverlay
             {
                 draw.DrawString(text, size, paint, (float)loc.X, (float)loc.Y);
             }
+        }
+
+        private void DrawControls()
+        {
+            if (Glass.InvokeRequired)
+            {
+                Glass.Invoke(new Action(() => { DrawControls(); }));
+                return;
+            }
+
+            if (!this.Standalone)
+                return;
+            if (!this.Glass.Focused)
+                return;
+
+            var csize = GetClientSize();
+            var cGrip = EDGlassForm.cGrip;
+            var graphics = getDraw();
+            Rectangle rc = new Rectangle(0, 0, csize.Width-1, csize.Height-1);
+            Brush brush = GetBrush("#ffffff");
+            Pen pen = new Pen(brush);
+            graphics.DrawRectangle(pen, rc);
+
+            rc = new Rectangle(csize.Width - cGrip, csize.Height - cGrip, cGrip, cGrip);
+            graphics.FillRectangle(brush, rc);
+            ControlPaint.DrawSizeGrip(graphics, Color.Black, rc);
+
+            rc = new Rectangle(0, 0, cGrip, cGrip);
+            ControlPaint.DrawContainerGrabHandle(graphics, rc);
         }
     }
 }
