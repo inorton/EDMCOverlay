@@ -17,8 +17,6 @@ namespace EDMCOverlay
     public class EDGlassForm : Form
     {
         public System.Diagnostics.Process Follow;
-        
-     
 
         public bool HalfSize { get; set; }
 
@@ -53,7 +51,6 @@ namespace EDMCOverlay
             this.FormBorderStyle = FormBorderStyle.None;
             if (this.standalone) {
                 this.ControlBox = false;
-                //this.Text = String.Empty;
                 this.Text = this.Name;
                 this.ShowInTaskbar = true;
                 this.TopMost = false;
@@ -83,7 +80,7 @@ namespace EDMCOverlay
         private const int HTCLIENT = 0x1;
         private const int HTCAPTION = 0x2;
         private const int HTBOTTOMRIGHT = 0x11;
-        public const int cGrip = 16;
+        public const int cGrip = 32;
 
         protected override void WndProc(ref Message message)
         {
@@ -116,8 +113,6 @@ namespace EDMCOverlay
         {
             base.OnLoad(e);
 
-            FollowWindow();
-
             this.SetStyle(
                 ControlStyles.OptimizedDoubleBuffer |
                 ControlStyles.AllPaintingInWmPaint |
@@ -145,10 +140,13 @@ namespace EDMCOverlay
                         this.Size = Settings.Default.WindowPosition.Size;
                     }
                 }
+            } else
+            {
+                FollowWindow();
             }
             windowInitialized = true;
         }
-        protected override void OnClosed(EventArgs e)
+        /*protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
 
@@ -162,15 +160,17 @@ namespace EDMCOverlay
                 case FormWindowState.Normal:
                 case FormWindowState.Maximized:
                     Settings.Default.WindowState = this.WindowState;
+                    Settings.Default.WindowPosition = this.DesktopBounds;
                     break;
 
                 default:
                     Settings.Default.WindowState = FormWindowState.Normal;
+                    Settings.Default.WindowPosition = this.DesktopBounds;
                     break;
             }
 
             Settings.Default.Save();
-        }
+        }*/
 
         protected override void OnResize(EventArgs e)
         {
@@ -270,29 +270,28 @@ namespace EDMCOverlay
             
         }
 
-        /* 
-         * protected override void OnClosing(CancelEventArgs e)
+        protected override void OnClosing(CancelEventArgs e)
         {
             if (this.standalone)
             {
-                Settings.Default.WindowState = (int)this.WindowState;
-                Settings.Default.WnidowLocation = this.Location;
-
-                // Copy window size to app settings
-                if (this.WindowState == FormWindowState.Normal)
+                switch (this.WindowState)
                 {
-                    Settings.Default.WindowSize = this.Size;
-                }
-                else
-                {
-                    Settings.Default.WindowSize = this.RestoreBounds.Size;
+                    case FormWindowState.Normal:
+                    case FormWindowState.Maximized:
+                        Settings.Default.WindowState = this.WindowState;
+                        Settings.Default.WindowPosition = this.DesktopBounds;
+                        break;
+
+                    default:
+                        Settings.Default.WindowState = FormWindowState.Normal;
+                        Settings.Default.WindowPosition = this.DesktopBounds;
+                        break;
                 }
 
-                // Save settings
                 Settings.Default.Save();
             }
 
             base.OnClosing(e);
-        } */
+        }
     }
 }
