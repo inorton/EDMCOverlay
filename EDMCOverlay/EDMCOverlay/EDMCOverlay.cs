@@ -250,6 +250,11 @@ namespace EDMCOverlay
                             }
                         }
                     }
+
+                    if (arg.Equals("--standalone"))
+                    {
+                        renderer.Standalone = true;
+                    }
                 }            
                 server = new OverlayJsonServer(5010, renderer);
                 System.Threading.ThreadPool.QueueUserWorkItem((x) => server.Start());
@@ -258,7 +263,7 @@ namespace EDMCOverlay
                 {
                     // elite isn't running?
                     // if we are in test mode, just use ourself
-                    if (renderer.TestMode || renderer.ForceRender)
+                    if (renderer.Standalone || renderer.TestMode || renderer.ForceRender)
                     {
                         Logger.LogMessage("No game running, using fake test window");
                         game = Process.GetCurrentProcess();
@@ -271,7 +276,7 @@ namespace EDMCOverlay
                     Environment.Exit(0);
                 }
 
-                EDGlassForm glass = new EDGlassForm(game);
+                EDGlassForm glass = new EDGlassForm(game, renderer.Standalone);
                 renderer.Glass = glass;
                 glass.HalfSize = renderer.HalfSize;
                 renderer.Graphics = server.Graphics;
