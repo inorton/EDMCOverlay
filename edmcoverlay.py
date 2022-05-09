@@ -69,7 +69,7 @@ def check_game_running():
     return monitor.monitor.game_running()
 
 
-def ensure_service():
+def ensure_service(args=[]):
     """
     Start the overlay service program
     :return:
@@ -99,11 +99,12 @@ def ensure_service():
 
             if not _service:
                 if check_game_running():
-                    trace("EDMCOverlay is starting {}".format(program))
-                _service = subprocess.Popen([program], cwd=exedir)
+                    trace("EDMCOverlay is starting {} with {}".format(program, args))
+                prog_args = [program]+args
+                _service = subprocess.Popen(prog_args, cwd=exedir)
             time.sleep(2)
             if _service.poll() is not None:
-                subprocess.check_call([program], cwd=exedir)
+                subprocess.check_call(prog_args, cwd=exedir)
                 raise Exception("{} exited".format(program))
         except Exception as err:
             if check_game_running():
@@ -115,9 +116,10 @@ class Overlay(object):
     Client for EDMCOverlay
     """
 
-    def __init__(self, server=SERVER_ADDRESS, port=SERVER_PORT):
+    def __init__(self, server=SERVER_ADDRESS, port=SERVER_PORT, args=[]):
         self.server = server
         self.port = port
+        self.args = args
         self.connection = None
 
     def connect(self):
@@ -169,7 +171,7 @@ class Overlay(object):
         :return:
         """
         if not self.connection:
-            ensure_service()
+            ensure_service(self.args)
             self.connect()
 
         msg = {"id": shapeid,
@@ -195,7 +197,7 @@ class Overlay(object):
         :return:
         """
         if not self.connection:
-            ensure_service()
+            ensure_service(self.args)
             self.connect()
 
         msg = {"id": msgid,
@@ -221,7 +223,7 @@ class Overlay(object):
         :return:
         """
         if not self.connection:
-            ensure_service()
+            ensure_service(self.args)
             self.connect()
 
         msg = {"id": shapeid,
