@@ -67,7 +67,7 @@ namespace EDMCOverlay
                     Size = GraphicType.FONT_LARGE,
                     X = 30,
                     Y = 130,
-                    Text = $"/EDMC Overlay {version} /"
+                    Text = $"/EDMC Overlay V{version} /"
                 };
                 var intro = new InternalGraphic(banner, -1);
                 _graphics.Add(banner.Id, intro);
@@ -126,6 +126,7 @@ namespace EDMCOverlay
                 Logger.LogMessage("Got command: " + request.Command);
                 if (request.Command.Equals("exit"))
                 {
+                    _renderer.Glass.Close();
                     System.Environment.Exit(0);
                 }
 
