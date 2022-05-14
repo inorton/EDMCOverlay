@@ -8,5 +8,11 @@
     <Setting Name="WindowPosition" Type="System.Drawing.Rectangle" Scope="User">
       <Value Profile="(Default)">300, 300, 940, 700</Value>
     </Setting>
+    <Setting Name="Transparent" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="TopMost" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

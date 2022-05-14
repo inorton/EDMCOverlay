@@ -46,17 +46,17 @@ namespace EDMCOverlay
             this.DoubleBuffered = true;          
             this.ClientSize = new Size(100, 100);
             var version = Assembly.GetEntryAssembly().GetName().Version;
-            this.Name = $"EDMC Overlay {version}";
-            this.TransparencyKey = Color.Black;
+            this.Name = $"EDMC Overlay V{version}";
             this.FormBorderStyle = FormBorderStyle.None;
+            this.ControlBox = false;
+            this.Text = this.Name;
+
             if (this.standalone) {
-                this.ControlBox = false;
-                this.Text = this.Name;
+                this.TransparencyKey = Settings.Default.Transparent ? Color.Black : Color.Empty;
                 this.ShowInTaskbar = true;
-                this.TopMost = false;
+                this.TopMost = Settings.Default.TopMost;
             } else {
-                this.ControlBox = false;
-                this.Text = this.Name;
+                this.TransparencyKey = Color.Black;
                 this.ShowInTaskbar = false;
                 this.TopMost = true;
                 
@@ -77,6 +77,7 @@ namespace EDMCOverlay
         }
 
         private const int WM_NCHITTEST = 0x84;
+        private const int WM_LBUTTONUP = 0x0202;
         private const int HTCLIENT = 0x1;
         private const int HTCAPTION = 0x2;
         private const int HTBOTTOMRIGHT = 0x11;
@@ -84,6 +85,8 @@ namespace EDMCOverlay
 
         protected override void WndProc(ref Message message)
         {
+            if (!this.standalone) return;
+
             if (message.Msg == WM_NCHITTEST)
             {  
                 Point pos = new Point(message.LParam.ToInt32());
@@ -98,9 +101,43 @@ namespace EDMCOverlay
                     message.Result = (IntPtr)HTCAPTION;
                     return;
                 }
+                else if (pos.X >= this.ClientSize.Width - cGrip && pos.Y <= cGrip)
+                {
+                    this.TransparencyKey = Color.Empty;
+                    Settings.Default.Transparent = false;
+                    message.Result = (IntPtr)HTCAPTION;
+                    return;
+                }
+                else if (pos.X <= cGrip && pos.Y >= this.ClientSize.Height - cGrip)
+                {
+                    this.TransparencyKey = Color.Black;
+                    Settings.Default.Transparent = true;
+                    message.Result = (IntPtr)HTCAPTION;
+                    return;
+                }
+                else if (pos.X >= this.ClientSize.Width/2 - cGrip/2 && pos.X <= this.ClientSize.Width/2 + cGrip / 2 && pos.Y <= cGrip/2)
+                {
+                    this.TopMost= true;
+                    this.Update();
+                    this.BringToFront();
+                    Settings.Default.TopMost= true;
+                    message.Result = (IntPtr)HTCAPTION;
+                    return;
+                }
+                else if (pos.X >= this.ClientSize.Width/2 - cGrip / 2 && pos.X <= this.ClientSize.Width/2 + cGrip / 2 && pos.Y >= ClientSize.Height - cGrip / 2)
+                {
+                    this.TopMost = false;
+                    this.Update();
+                    Settings.Default.TopMost = false;
+                    message.Result = (IntPtr)HTCAPTION;
+                    return;
+                }
                 else
                 {
-                    message.Result = (IntPtr)HTCAPTION;
+                    if (this.TransparencyKey == Color.Empty)
+                    {
+                        message.Result = (IntPtr)HTCAPTION;
+                    }
                     return;
                 }
             }
@@ -140,38 +177,15 @@ namespace EDMCOverlay
                         this.Size = Settings.Default.WindowPosition.Size;
                     }
                 }
+                this.TransparencyKey = Settings.Default.Transparent ? Color.Black : Color.Empty;
+                this.TopMost = Settings.Default.TopMost;
             } else
             {
                 FollowWindow();
             }
             windowInitialized = true;
         }
-        /*protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-
-            if (! this.standalone) 
-            {
-                return;
-            }
-            // only save the WindowState if Normal or Maximized
-            switch (this.WindowState)
-            {
-                case FormWindowState.Normal:
-                case FormWindowState.Maximized:
-                    Settings.Default.WindowState = this.WindowState;
-                    Settings.Default.WindowPosition = this.DesktopBounds;
-                    break;
-
-                default:
-                    Settings.Default.WindowState = FormWindowState.Normal;
-                    Settings.Default.WindowPosition = this.DesktopBounds;
-                    break;
-            }
-
-            Settings.Default.Save();
-        }*/
-
+        
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
@@ -278,7 +292,7 @@ namespace EDMCOverlay
                 {
                     case FormWindowState.Normal:
                     case FormWindowState.Maximized:
-                        Settings.Default.WindowState = this.WindowState;
+                        Settings.Default.WindowState = FormWindowState.Normal;
                         Settings.Default.WindowPosition = this.DesktopBounds;
                         break;
 

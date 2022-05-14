@@ -531,17 +531,51 @@ namespace EDMCOverlay
             var csize = GetClientSize();
             var cGrip = EDGlassForm.cGrip;
             var graphics = getDraw();
-            Rectangle rc = new Rectangle(0, 0, csize.Width-1, csize.Height-1);
             Brush brush = GetBrush("#ffffff");
             Pen pen = new Pen(brush);
-            graphics.DrawRectangle(pen, rc);
-
-            rc = new Rectangle(csize.Width - cGrip, csize.Height - cGrip, cGrip, cGrip);
+            
+            Rectangle rc = new Rectangle(csize.Width - cGrip, csize.Height - cGrip, cGrip, cGrip);
             graphics.FillRectangle(brush, rc);
             ControlPaint.DrawSizeGrip(graphics, Color.Black, rc);
 
             rc = new Rectangle(0, 0, cGrip, cGrip);
             ControlPaint.DrawContainerGrabHandle(graphics, rc);
+
+            rc = new Rectangle(csize.Width - cGrip, 0, cGrip, cGrip);
+            graphics.FillRectangle(brush, rc);
+
+            rc = new Rectangle(0, csize.Height - cGrip, cGrip, cGrip);
+            graphics.FillRectangle(brush, rc);
+
+            brush = GetBrush("#999999");
+            rc = new Rectangle(0, csize.Height - cGrip, cGrip/2, cGrip/2);
+            graphics.FillRectangle(brush, rc);
+            rc = new Rectangle(cGrip/2, csize.Height - cGrip/2, cGrip/2, cGrip/2);
+            graphics.FillRectangle(brush, rc);
+
+
+            rc = new Rectangle(csize.Width - cGrip, 0, cGrip / 2, cGrip / 2);
+            graphics.FillRectangle(brush, rc);
+            rc = new Rectangle(csize.Width - cGrip / 2, cGrip / 2, cGrip / 2, cGrip / 2);
+            graphics.FillRectangle(brush, rc);
+
+            pen = new Pen(Color.Red, 3);
+            graphics.DrawLine(pen, csize.Width - cGrip, 0, csize.Width, cGrip);
+            graphics.DrawLine(pen, csize.Width, 0, csize.Width - cGrip, cGrip);
+
+            brush = GetBrush("#00FF00");
+            rc = new Rectangle(csize.Width/2 - cGrip/2, 0, cGrip / 2, cGrip / 2);
+            graphics.FillRectangle(brush, rc);
+
+            brush = GetBrush("#FF0000");
+            rc = new Rectangle(csize.Width/2 - cGrip / 2, csize.Height - cGrip / 2, cGrip / 2, cGrip / 2);
+            graphics.FillRectangle(brush, rc);
+
+
+            brush = GetBrush("#ffffff");
+            pen = new Pen(brush);
+            rc = new Rectangle(0, 0, csize.Width - 1, csize.Height - 1);
+            graphics.DrawRectangle(pen, rc);
         }
     }
 }
