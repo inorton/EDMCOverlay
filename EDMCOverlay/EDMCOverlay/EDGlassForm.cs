@@ -85,9 +85,7 @@ namespace EDMCOverlay
 
         protected override void WndProc(ref Message message)
         {
-            if (!this.standalone) return;
-
-            if (message.Msg == WM_NCHITTEST)
+            if (this.standalone && message.Msg == WM_NCHITTEST)
             {  
                 Point pos = new Point(message.LParam.ToInt32());
                 pos = this.PointToClient(pos);
