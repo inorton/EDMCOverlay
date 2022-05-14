@@ -306,7 +306,7 @@ namespace EDMCOverlay
                         if (Glass.Follow != null && Glass.Follow.HasExited)
                         {
                             Logger.LogMessage(String.Format("{0} has exited. quitting.", Glass.Follow.ProcessName));
-                            System.Environment.Exit(0);
+                            System.Environment.Exit(4);
                         }
 
                         if (draw == null)

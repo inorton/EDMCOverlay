@@ -273,7 +273,7 @@ namespace EDMCOverlay
                 if (game == null)
                 {
                     Logger.LogMessage("No game running, exiting.");
-                    Environment.Exit(0);
+                    Environment.Exit(2);
                 }
 
                 EDGlassForm glass = new EDGlassForm(game, renderer.Standalone);
@@ -285,7 +285,8 @@ namespace EDMCOverlay
             catch (Exception err)
             {
                 Logger.LogMessage(String.Format("exiting!: {0}", err.ToString()));
-                Environment.Exit(0);
+                Console.WriteLine(err.ToString());
+                Environment.Exit(3);
             }
         }
     }

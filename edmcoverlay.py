@@ -100,12 +100,12 @@ def ensure_service(args=[]):
             if not _service:
                 if check_game_running():
                     trace("EDMCOverlay is starting {} with {}".format(program, args))
-                prog_args = [program]+args
+                prog_args = [program]+args if args else [program]
                 _service = subprocess.Popen(prog_args, cwd=exedir)
             time.sleep(2)
             if _service.poll() is not None:
                 subprocess.check_call(prog_args, cwd=exedir)
-                raise Exception("{} exited".format(program))
+                raise Exception("{} exited with {}".format(program, _service.returncode))
         except Exception as err:
             if check_game_running():
                 trace("error in ensure_service: {}".format(err))
