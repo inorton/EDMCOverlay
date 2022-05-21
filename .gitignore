@@ -14,4 +14,7 @@ Plugins/
 *.Json.xml
 *.pdb
 *.vshost.exe*
+.vscode/settings.json
 /.vs
+EDMCOverlay/UpgradeLog.htm
+EDMCOverlay/UpgradeLog2.htm

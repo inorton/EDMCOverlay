@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace EDMCOverlay
 {
@@ -250,6 +250,11 @@ namespace EDMCOverlay
                             }
                         }
                     }
+
+                    if (arg.Equals("--standalone"))
+                    {
+                        renderer.Standalone = true;
+                    }
                 }            
                 server = new OverlayJsonServer(5010, renderer);
                 System.Threading.ThreadPool.QueueUserWorkItem((x) => server.Start());
@@ -258,7 +263,7 @@ namespace EDMCOverlay
                 {
                     // elite isn't running?
                     // if we are in test mode, just use ourself
-                    if (renderer.TestMode || renderer.ForceRender)
+                    if (renderer.Standalone || renderer.TestMode || renderer.ForceRender)
                     {
                         Logger.LogMessage("No game running, using fake test window");
                         game = Process.GetCurrentProcess();
@@ -268,10 +273,10 @@ namespace EDMCOverlay
                 if (game == null)
                 {
                     Logger.LogMessage("No game running, exiting.");
-                    Environment.Exit(0);
+                    Environment.Exit(2);
                 }
 
-                EDGlassForm glass = new EDGlassForm(game);
+                EDGlassForm glass = new EDGlassForm(game, renderer.Standalone);
                 renderer.Glass = glass;
                 glass.HalfSize = renderer.HalfSize;
                 renderer.Graphics = server.Graphics;
@@ -280,7 +285,8 @@ namespace EDMCOverlay
             catch (Exception err)
             {
                 Logger.LogMessage(String.Format("exiting!: {0}", err.ToString()));
-                Environment.Exit(0);
+                Console.WriteLine(err.ToString());
+                Environment.Exit(3);
             }
         }
     }

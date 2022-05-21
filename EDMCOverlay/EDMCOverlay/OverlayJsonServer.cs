@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -57,6 +58,7 @@ namespace EDMCOverlay
             lock (_graphics)
             {
                 Logger.LogMessage("JSON server thread startup");
+                var version = Assembly.GetEntryAssembly().GetName().Version;
                 var banner = new Graphic
                 {
                     TTL = 15,
@@ -65,7 +67,7 @@ namespace EDMCOverlay
                     Size = GraphicType.FONT_LARGE,
                     X = 30,
                     Y = 130,
-                    Text = "/EDMC Overlay/"
+                    Text = $"/EDMC Overlay V{version} /"
                 };
                 var intro = new InternalGraphic(banner, -1);
                 _graphics.Add(banner.Id, intro);
@@ -124,6 +126,7 @@ namespace EDMCOverlay
                 Logger.LogMessage("Got command: " + request.Command);
                 if (request.Command.Equals("exit"))
                 {
+                    _renderer.Glass.Close();
                     System.Environment.Exit(0);
                 }
 

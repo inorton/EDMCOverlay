@@ -59,7 +59,6 @@ def find_server_program():
             return item
     return None
 
-
 _service = None
 
 
@@ -70,7 +69,7 @@ def check_game_running():
     return monitor.monitor.game_running()
 
 
-def ensure_service():
+def ensure_service(args=[]):
     """
     Start the overlay service program
     :return:
@@ -100,12 +99,13 @@ def ensure_service():
 
             if not _service:
                 if check_game_running():
-                    trace("EDMCOverlay is starting {}".format(program))
-                _service = subprocess.Popen([program], cwd=exedir)
+                    trace("EDMCOverlay is starting {} with {}".format(program, args))
+                prog_args = [program]+args if args else [program]
+                _service = subprocess.Popen(prog_args, cwd=exedir)
             time.sleep(2)
             if _service.poll() is not None:
-                subprocess.check_call([program], cwd=exedir)
-                raise Exception("{} exited".format(program))
+                subprocess.check_call(prog_args, cwd=exedir)
+                raise Exception("{} exited with {}".format(program, _service.returncode))
         except Exception as err:
             if check_game_running():
                 trace("error in ensure_service: {}".format(err))
@@ -116,9 +116,10 @@ class Overlay(object):
     Client for EDMCOverlay
     """
 
-    def __init__(self, server=SERVER_ADDRESS, port=SERVER_PORT):
+    def __init__(self, server=SERVER_ADDRESS, port=SERVER_PORT, args=[]):
         self.server = server
         self.port = port
+        self.args = args
         self.connection = None
 
     def connect(self):
@@ -129,7 +130,7 @@ class Overlay(object):
         connection = socket.socket()
         connection.connect((self.server, self.port))
         self.connection = connection
-
+    
     def send_raw(self, msg):
         """
         Encode a dict and send it to the server
@@ -155,6 +156,34 @@ class Overlay(object):
             raise
         return None
 
+    def send_shape(self, shapeid, shape, color, fill, x, y, w, h, ttl):
+        """
+        Send a shape
+        :param shapeid:
+        :param shape:
+        :param color:
+        :param fill:
+        :param x:
+        :param y:
+        :param w:
+        :param h:
+        :param ttl:
+        :return:
+        """
+        if not self.connection:
+            ensure_service(self.args)
+            self.connect()
+
+        msg = {"id": shapeid,
+               "shape": shape,
+               "color": color,
+               "fill": fill,
+               "x": x, "y": y,
+               "w": w, "h": h,
+               "ttl": ttl
+               }
+        self.send_raw(msg)
+
     def send_message(self, msgid, text, color, x, y, ttl=4, size="normal"):
         """
         Send a message
@@ -168,7 +197,7 @@ class Overlay(object):
         :return:
         """
         if not self.connection:
-            ensure_service()
+            ensure_service(self.args)
             self.connect()
 
         msg = {"id": msgid,
@@ -194,7 +223,7 @@ class Overlay(object):
         :return:
         """
         if not self.connection:
-            ensure_service()
+            ensure_service(self.args)
             self.connect()
 
         msg = {"id": shapeid,
@@ -213,7 +242,6 @@ def debugconsole():
     Print stuff
     """
     import load as loader
-
     loader.plugin_start()
 
     cl = Overlay()
