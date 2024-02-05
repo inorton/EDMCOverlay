@@ -57,7 +57,7 @@ Assuming EliteDangerous64.exe is running, you may send a single JSON message (on
 Like so:
 
 ```
-{"id": "test1", "text": "You are low on fuel!", "size", "normal", color": "red", "x": 200, "y": 100, "ttl": 8}
+{"id": "test1", "text": "You are low on fuel!", "size": "normal", "color": "red", "x": 200, "y": 100, "ttl": 8}
 ```
 Supported colors values are:
  "red", "green", "yellow", "blue" or "#rrggbb".
